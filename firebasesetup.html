@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Firebase Setup — Ava Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300&family=DM+Mono:wght@300;400&family=Montserrat:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--gold:#D4AF37;--black:#070707;--dark:#0f0f0f;--card:#141414;--border:rgba(212,175,55,.15);--white:#F5F0E8;--gray:#888;--green:#2ecc71;--mono:'DM Mono',monospace}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--black);color:var(--white);font-family:'Montserrat',sans-serif;padding:3rem 2rem;max-width:860px;margin:0 auto;line-height:1.7}
+h1{font-family:'Cormorant Garamond',serif;font-size:2.8rem;font-weight:300;color:var(--gold);margin-bottom:.3rem}
+.sub{font-size:.65rem;letter-spacing:.3em;text-transform:uppercase;color:var(--gray);margin-bottom:3rem}
+.step{background:var(--card);border:1px solid var(--border);border-left:3px solid var(--gold);padding:2rem;margin-bottom:1.5rem;position:relative}
+.step-num{position:absolute;top:-14px;left:1.5rem;background:var(--gold);color:var(--black);font-size:.55rem;font-weight:700;letter-spacing:.2em;text-transform:uppercase;padding:.3rem .9rem}
+.step h2{font-family:'Cormorant Garamond',serif;font-size:1.4rem;font-weight:300;margin-bottom:1rem;margin-top:.5rem}
+.step p{font-size:.75rem;color:var(--gray);margin-bottom:.8rem;line-height:1.8}
+.step ul{margin:.8rem 0 1rem 1.2rem}
+.step ul li{font-size:.75rem;color:var(--gray);margin-bottom:.5rem;line-height:1.7}
+.step ul li strong{color:var(--white)}
+code{font-family:var(--mono);font-size:.72rem;background:rgba(212,175,55,.1);color:var(--gold);padding:.15rem .5rem;border-radius:2px}
+.code-block{background:#0a0a0a;border:1px solid var(--border);padding:1.5rem;margin:1rem 0;overflow-x:auto}
+.code-block pre{font-family:var(--mono);font-size:.7rem;color:#c9d1d9;line-height:1.8;white-space:pre}
+.code-block .cm{color:#6a9955}.code-block .ck{color:#569cd6}.code-block .cv{color:#9cdcfe}.code-block .cs{color:#ce9178}
+.highlight{background:rgba(46,204,113,.08);border:1px solid rgba(46,204,113,.2);border-left:3px solid var(--green);padding:1rem 1.5rem;margin:1rem 0;font-size:.72rem;color:rgba(245,240,232,.8);line-height:1.8}
+.highlight strong{color:var(--green)}
+.warn{background:rgba(212,175,55,.06);border:1px solid rgba(212,175,55,.2);border-left:3px solid var(--gold);padding:1rem 1.5rem;margin:1rem 0;font-size:.72rem;color:rgba(245,240,232,.8);line-height:1.8}
+.warn strong{color:var(--gold)}
+.tag{display:inline-block;font-size:.5rem;font-weight:700;letter-spacing:.15em;text-transform:uppercase;padding:.2rem .6rem;background:var(--gold);color:var(--black);margin-left:.5rem;vertical-align:middle}
+.divider{height:1px;background:var(--border);margin:2.5rem 0}
+a{color:var(--gold);text-decoration:none}a:hover{text-decoration:underline}
+.final{background:linear-gradient(135deg,rgba(212,175,55,.08),rgba(212,175,55,.02));border:1px solid var(--gold);padding:2rem;text-align:center;margin-top:2rem}
+.final h2{font-family:'Cormorant Garamond',serif;font-size:1.8rem;color:var(--gold);margin-bottom:.8rem}
+.final p{font-size:.72rem;color:var(--gray);line-height:1.8}
+</style>
+</head>
+<body>
+
+<h1>Firebase Setup Guide</h1>
+<div class="sub">Ava Admin · Real-Time Order Collection · Step-by-Step</div>
+
+<div class="highlight">
+  <strong>What this does:</strong> Every customer who checks out on your site (from any device, anywhere in the world) will instantly appear in your admin panel. Firebase is free for your usage level and takes about 10 minutes to set up.
+</div>
+
+<div class="step">
+  <div class="step-num">Step 1</div>
+  <h2>Create a Firebase Project</h2>
+  <ul>
+    <li>Go to <a href="https://console.firebase.google.com" target="_blank"><strong>console.firebase.google.com</strong></a></li>
+    <li>Click <strong>"Create a project"</strong></li>
+    <li>Name it <strong>ava-jewelry</strong> (or anything you like)</li>
+    <li>Disable Google Analytics (not needed) → Click <strong>"Create project"</strong></li>
+    <li>Wait ~30 seconds, then click <strong>"Continue"</strong></li>
+  </ul>
+</div>
+
+<div class="step">
+  <div class="step-num">Step 2</div>
+  <h2>Create a Firestore Database</h2>
+  <ul>
+    <li>In the left sidebar, click <strong>"Firestore Database"</strong> (under Build)</li>
+    <li>Click <strong>"Create database"</strong></li>
+    <li>Select <strong>"Start in test mode"</strong> → Click Next</li>
+    <li>Choose your closest region (e.g. <strong>us-central</strong> or <strong>europe-west</strong>) → Click <strong>"Enable"</strong></li>
+  </ul>
+  <div class="warn"><strong>⚠️ Test mode expires in 30 days.</strong> Before it expires, go to Firestore → Rules and change <code>allow read, write: if false</code> to <code>allow read, write: if true</code> to keep it open. (Fine for a private store.)</div>
+</div>
+
+<div class="step">
+  <div class="step-num">Step 3</div>
+  <h2>Register Your Web App &amp; Get Config Keys</h2>
+  <ul>
+    <li>In Firebase console, click the <strong>gear icon ⚙️</strong> → <strong>"Project settings"</strong></li>
+    <li>Scroll to <strong>"Your apps"</strong> → Click the <strong>&lt;/&gt; Web</strong> icon</li>
+    <li>Name it <strong>ava-web</strong> → Click <strong>"Register app"</strong></li>
+    <li>You'll see a config block like this — <strong>copy it:</strong></li>
+  </ul>
+  <div class="code-block"><pre><span class="ck">const</span> <span class="cv">firebaseConfig</span> = {
+  <span class="cv">apiKey</span>: <span class="cs">"AIzaSy..."</span>,
+  <span class="cv">authDomain</span>: <span class="cs">"ava-jewelry.firebaseapp.com"</span>,
+  <span class="cv">projectId</span>: <span class="cs">"ava-jewelry"</span>,
+  <span class="cv">storageBucket</span>: <span class="cs">"ava-jewelry.appspot.com"</span>,
+  <span class="cv">messagingSenderId</span>: <span class="cs">"123456789"</span>,
+  <span class="cv">appId</span>: <span class="cs">"1:123..."</span>
+};</pre></div>
+  <div class="highlight"><strong>✅ Keep this config block.</strong> You'll paste it into both <code>payment.html</code> and <code>admin.html</code> in the next step.</div>
+</div>
+
+<div class="step">
+  <div class="step-num">Step 4</div>
+  <h2>Update Your Files</h2>
+  <p style="font-size:.75rem;color:var(--gray);margin-bottom:1rem">Open each file I gave you and find the line that says:</p>
+  <div class="code-block"><pre><span class="cm">// ▼▼▼ PASTE YOUR FIREBASE CONFIG HERE ▼▼▼</span></pre></div>
+  <p style="font-size:.75rem;color:var(--gray);margin:.8rem 0">Replace those lines with your actual config from Step 3. Do this in <strong>both</strong>:</p>
+  <ul>
+    <li><strong>payment.html</strong> — so orders get saved when customers pay</li>
+    <li><strong>admin.html</strong> — so you can see orders in the dashboard</li>
+  </ul>
+</div>
+
+<div class="step">
+  <div class="step-num">Step 5</div>
+  <h2>Push to GitHub &amp; Deploy on Vercel</h2>
+  <ul>
+    <li>Save all files</li>
+    <li>In VS Code terminal, run:</li>
+  </ul>
+  <div class="code-block"><pre>git add .
+git commit -m "Add Firebase order tracking"
+git push</pre></div>
+  <ul>
+    <li>Vercel will auto-deploy in ~1 minute</li>
+    <li>Open your live site and do a <strong>test checkout</strong></li>
+    <li>Then open your admin panel — the order should appear immediately! 🎉</li>
+  </ul>
+</div>
+
+<div class="divider"></div>
+
+<div class="final">
+  <h2>You're Done! 🎉</h2>
+  <p>Every customer who checks out will now appear in your admin panel in real time.<br>
+  Firebase free tier supports <strong>50,000 reads &amp; 20,000 writes per day</strong> — more than enough.<br><br>
+  <strong>Files to deploy:</strong> payment.html (updated) + admin.html (updated)</p>
+</div>
+
+</body>
+</html>
