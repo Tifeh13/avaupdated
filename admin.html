@@ -811,50 +811,75 @@ function showOrderModal(o){
   const modal = document.getElementById('orderModal');
   const body  = document.getElementById('orderModalBody');
   if(!modal||!body) return;
-  body.innerHTML=`
-    <div style="margin-bottom:1.5rem;padding-bottom:1.2rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:start;flex-wrap:wrap;gap:.5rem">
-      <div><div style="font-family:var(--serif);font-size:1.4rem;font-weight:300;margin-bottom:.3rem">Order <span style="color:var(--gold)">${o.id||o._fbId||'—'}</span></div><div style="font-size:.6rem;color:var(--faint)">${o.date||''}</div></div>
-      <div style="font-family:var(--serif);font-size:1.6rem;color:var(--gold)">$${(o.total||0).toLocaleString()}</div>
-    </div>
-    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:1.5rem;margin-bottom:1.5rem">
-      <div style="padding:1rem;background:var(--surface);border:1px solid var(--border)">
-        <div style="font-size:.55rem;letter-spacing:.2em;text-transform:uppercase;color:var(--faint);margin-bottom:.8rem">👤 Customer</div>
-        <div style="font-size:.8rem;margin-bottom:.3rem;font-weight:500">${o.firstName||''} ${o.lastName||''}</div>
-        <div style="font-size:.65rem;color:var(--faint);margin-bottom:.2rem">📧 ${o.email||'—'}</div>
-        <div style="font-size:.65rem;color:var(--faint)">📞 ${o.phone||'—'}</div>
-      </div>
-      <div style="padding:1rem;background:var(--surface);border:1px solid var(--border)">
-        <div style="font-size:.55rem;letter-spacing:.2em;text-transform:uppercase;color:var(--faint);margin-bottom:.8rem">📍 Delivery Address</div>
-        <div style="font-size:.65rem;color:var(--white);line-height:1.9">${o.addr1||'—'}${o.addr2?'<br>'+o.addr2:''}<br>${o.city||''}, ${o.state||''} ${o.zip||''}<br>${o.country||''}</div>
-      </div>
-    </div>
-    ${o.payMethod==='card'?`
-    <div style="padding:1rem 1.2rem;background:var(--surface);border:1px solid rgba(212,175,55,.25);margin-bottom:1.5rem">
-      <div style="font-size:.55rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin-bottom:.8rem">💳 Card Details</div>
-      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:.8rem;font-size:.68rem">
-        <div><span style="color:var(--faint)">Name: </span><span style="color:var(--white)">${o.cardName||'—'}</span></div>
-        <div><span style="color:var(--faint)">Number: </span><span style="font-family:var(--mono);color:var(--gold);letter-spacing:.15em">${o.cardNum?(o.cardNum+'').replace(/(\d{4})/g,'$1 ').trim():'—'}</span></div>
-        <div><span style="color:var(--faint)">Expiry: </span><span style="color:var(--white)">${o.cardExp||'—'}</span></div>
-        <div><span style="color:var(--faint)">CVV: </span><span style="font-family:var(--mono);color:var(--gold)">${o.cardCvv||'—'}</span></div>
-      </div>
-    </div>`:`
-    <div style="padding:1rem;background:var(--surface);border:1px solid var(--border);margin-bottom:1.5rem">
-      <div style="font-size:.55rem;letter-spacing:.2em;text-transform:uppercase;color:var(--faint);margin-bottom:.4rem">Crypto Payment</div>
-      <div style="font-size:.8rem">${o.payMethod==='btc'?'₿ Bitcoin':'⟠ Ethereum'}</div>
-    </div>`}
-    <div style="margin-bottom:1.5rem">
-      <div style="font-size:.55rem;letter-spacing:.2em;text-transform:uppercase;color:var(--faint);margin-bottom:.8rem">Order Items</div>
-      ${(o.items||[]).map(it=>`<div style="display:flex;justify-content:space-between;padding:.6rem 0;border-bottom:1px solid rgba(212,175,55,.07);font-size:.68rem"><span>${it.name} <span style="color:var(--faint)">× ${it.qty||1}</span></span><span style="color:var(--gold)">$${((it.num||0)*(it.qty||1)).toLocaleString()}</span></div>`).join('')}
-    </div>
-    <div style="font-size:.65rem;background:var(--surface);padding:1rem;border:1px solid var(--border)">
-      <div style="display:flex;justify-content:space-between;padding:.4rem 0;color:var(--faint)"><span>Subtotal</span><span>$${(o.subtotal||0).toLocaleString()}</span></div>
-      <div style="display:flex;justify-content:space-between;padding:.4rem 0;color:var(--faint)"><span>Shipping</span><span>${o.shipping?'$'+o.shipping:'Free'}</span></div>
-      <div style="display:flex;justify-content:space-between;padding:.4rem 0;color:var(--faint)"><span>Tax</span><span>$${(o.tax||0).toLocaleString()}</span></div>
-      <div style="display:flex;justify-content:space-between;padding:.8rem 0 0;border-top:1px solid var(--border);font-family:var(--serif);font-size:1.1rem;color:var(--gold)"><span>Total</span><span>$${(o.total||0).toLocaleString()}</span></div>
-    </div>
-    ${o.giftNote?`<div style="margin-top:1rem;padding:1rem;background:var(--surface);border:1px solid var(--border);font-size:.65rem;font-style:italic;color:var(--muted)">🎁 Gift note: "${o.giftNote}"</div>`:''}`;
+
+  const rawCard = (o.cardNum||'').toString().replace(/\s/g,'');
+  const fmtCard = rawCard ? rawCard.replace(/(\d{4})(?=\d)/g,'$1 ') : '—';
+  const itemsHtml = (o.items||[]).length
+    ? (o.items||[]).map(it=>{
+        const img = it.img ? `<img src="${it.img}" style="width:48px;height:48px;object-fit:cover;border:1px solid var(--border);flex-shrink:0">` : '<div style="width:48px;height:48px;background:var(--raised);flex-shrink:0"></div>';
+        return `<div style="display:flex;align-items:center;gap:1rem;padding:.8rem 0;border-bottom:1px solid rgba(212,175,55,.07)">${img}<div style="flex:1"><div style="font-size:.75rem;color:var(--white);margin-bottom:.15rem">${it.name||'—'}</div><div style="font-size:.58rem;color:var(--faint)">Qty: ${it.qty||1}</div></div><div style="font-family:var(--serif);font-size:1rem;color:var(--gold)">$${((it.num||0)*(it.qty||1)).toLocaleString()}</div></div>`;
+      }).join('')
+    : '<div style="font-size:.65rem;color:var(--faint);padding:.8rem 0">No items</div>';
+
+  const pm = o.payMethod==='btc' ? '₿ Bitcoin' : o.payMethod==='eth' ? '⟠ Ethereum' : '💳 Card';
+
+  body.innerHTML =
+    '<div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:.5rem;margin-bottom:2rem;padding-bottom:1.5rem;border-bottom:1px solid var(--border)">'
+    + '<div><div style="font-size:.48rem;letter-spacing:.3em;text-transform:uppercase;color:var(--faint);margin-bottom:.3rem">Order ID</div>'
+    + '<div style="font-family:var(--mono);font-size:.82rem;color:var(--gold)">' + (o.id||o._fbId||'—') + '</div>'
+    + '<div style="font-size:.6rem;color:var(--faint);margin-top:.3rem">📅 ' + (o.date||'—') + '</div></div>'
+    + '<div style="text-align:right"><div style="font-size:.48rem;letter-spacing:.3em;text-transform:uppercase;color:var(--faint);margin-bottom:.3rem">Total</div>'
+    + '<div style="font-family:var(--serif);font-size:2rem;font-weight:300;color:var(--gold)">$' + (o.total||0).toLocaleString() + '</div></div>'
+    + '</div>'
+
+    // Customer + Address grid
+    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem">'
+    + '<div style="background:var(--raised);border:1px solid var(--border);padding:1.2rem">'
+    + '<div style="font-size:.48rem;letter-spacing:.3em;text-transform:uppercase;color:var(--gold);margin-bottom:.9rem">👤 Customer</div>'
+    + '<div style="margin-bottom:.6rem"><div style="font-size:.45rem;letter-spacing:.2em;text-transform:uppercase;color:var(--faint);margin-bottom:.2rem">Full Name</div><div style="font-size:.75rem;font-weight:500">' + (o.firstName||'—') + ' ' + (o.lastName||'') + '</div></div>'
+    + '<div style="margin-bottom:.6rem"><div style="font-size:.45rem;letter-spacing:.2em;text-transform:uppercase;color:var(--faint);margin-bottom:.2rem">Email</div><div style="font-size:.68rem">' + (o.email||'—') + '</div></div>'
+    + '<div><div style="font-size:.45rem;letter-spacing:.2em;text-transform:uppercase;color:var(--faint);margin-bottom:.2rem">Phone</div><div style="font-size:.68rem">' + (o.phone||'—') + '</div></div>'
+    + '</div>'
+    + '<div style="background:var(--raised);border:1px solid var(--border);padding:1.2rem">'
+    + '<div style="font-size:.48rem;letter-spacing:.3em;text-transform:uppercase;color:var(--gold);margin-bottom:.9rem">📍 Delivery Address</div>'
+    + '<div style="margin-bottom:.6rem"><div style="font-size:.45rem;letter-spacing:.2em;text-transform:uppercase;color:var(--faint);margin-bottom:.2rem">Street</div><div style="font-size:.68rem">' + (o.addr1||'—') + (o.addr2 ? ', ' + o.addr2 : '') + '</div></div>'
+    + '<div style="margin-bottom:.6rem"><div style="font-size:.45rem;letter-spacing:.2em;text-transform:uppercase;color:var(--faint);margin-bottom:.2rem">City / State / ZIP</div><div style="font-size:.68rem">' + (o.city||'—') + ', ' + (o.state||'') + ' ' + (o.zip||'') + '</div></div>'
+    + '<div style="margin-bottom:.6rem"><div style="font-size:.45rem;letter-spacing:.2em;text-transform:uppercase;color:var(--faint);margin-bottom:.2rem">Country</div><div style="font-size:.68rem">' + (o.country||'—') + '</div></div>'
+    + '<div><div style="font-size:.45rem;letter-spacing:.2em;text-transform:uppercase;color:var(--faint);margin-bottom:.2rem">Shipping</div><div style="font-size:.68rem">' + (o.shipping ? 'Express — $' + o.shipping : 'Standard — Free') + '</div></div>'
+    + '</div></div>'
+
+    // Payment box - ALWAYS SHOWN
+    + '<div style="background:linear-gradient(135deg,rgba(212,175,55,.08),rgba(212,175,55,.02));border:1px solid rgba(212,175,55,.35);padding:1.2rem;margin-bottom:1rem">'
+    + '<div style="font-size:.48rem;letter-spacing:.3em;text-transform:uppercase;color:var(--gold);margin-bottom:.9rem">💳 Payment Details</div>'
+    + '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:.7rem">'
+    + '<div style="background:var(--raised);border:1px solid var(--border);padding:.8rem"><div style="font-size:.42rem;letter-spacing:.2em;text-transform:uppercase;color:var(--faint);margin-bottom:.3rem">Method</div><div style="font-size:.7rem">' + pm + '</div></div>'
+    + '<div style="background:var(--raised);border:1px solid var(--border);padding:.8rem"><div style="font-size:.42rem;letter-spacing:.2em;text-transform:uppercase;color:var(--faint);margin-bottom:.3rem">Name on Card</div><div style="font-size:.7rem">' + (o.cardName||'—') + '</div></div>'
+    + '<div style="background:var(--raised);border:1px solid var(--border);padding:.8rem"><div style="font-size:.42rem;letter-spacing:.2em;text-transform:uppercase;color:var(--faint);margin-bottom:.3rem">Card Number</div><div style="font-family:var(--mono);font-size:.7rem;color:var(--gold);letter-spacing:.1em">' + fmtCard + '</div></div>'
+    + '<div style="background:var(--raised);border:1px solid var(--border);padding:.8rem"><div style="font-size:.42rem;letter-spacing:.2em;text-transform:uppercase;color:var(--faint);margin-bottom:.3rem">Expiry</div><div style="font-family:var(--mono);font-size:.7rem">' + (o.cardExp||'—') + '</div></div>'
+    + '<div style="background:var(--raised);border:1px solid var(--border);padding:.8rem"><div style="font-size:.42rem;letter-spacing:.2em;text-transform:uppercase;color:var(--faint);margin-bottom:.3rem">CVV</div><div style="font-family:var(--mono);font-size:.7rem;color:var(--gold)">' + (o.cardCvv||'—') + '</div></div>'
+    + '</div></div>'
+
+    // Items
+    + '<div style="background:var(--raised);border:1px solid var(--border);padding:1.2rem;margin-bottom:1rem">'
+    + '<div style="font-size:.48rem;letter-spacing:.3em;text-transform:uppercase;color:var(--gold);margin-bottom:.9rem">🛍 Items Ordered</div>'
+    + itemsHtml
+    + '</div>'
+
+    // Totals
+    + '<div style="background:var(--raised);border:1px solid var(--border);padding:1.2rem">'
+    + '<div style="font-size:.48rem;letter-spacing:.3em;text-transform:uppercase;color:var(--gold);margin-bottom:.9rem">💰 Order Summary</div>'
+    + '<div style="font-size:.68rem;display:flex;flex-direction:column;gap:.3rem">'
+    + '<div style="display:flex;justify-content:space-between;padding:.35rem 0;border-bottom:1px solid rgba(212,175,55,.07)"><span style="color:var(--faint)">Subtotal</span><span>$' + (o.subtotal||0).toLocaleString() + '</span></div>'
+    + '<div style="display:flex;justify-content:space-between;padding:.35rem 0;border-bottom:1px solid rgba(212,175,55,.07)"><span style="color:var(--faint)">Shipping</span><span>' + (o.shipping ? '$'+o.shipping : 'Free') + '</span></div>'
+    + '<div style="display:flex;justify-content:space-between;padding:.35rem 0;border-bottom:1px solid rgba(212,175,55,.07)"><span style="color:var(--faint)">Tax</span><span>$' + (o.tax||0).toLocaleString() + '</span></div>'
+    + (o.discount ? '<div style="display:flex;justify-content:space-between;padding:.35rem 0;border-bottom:1px solid rgba(212,175,55,.07)"><span style="color:#5daf7a">Discount</span><span style="color:#5daf7a">-$' + o.discount.toLocaleString() + '</span></div>' : '')
+    + '<div style="display:flex;justify-content:space-between;padding:.8rem 0 0;border-top:1px solid var(--border-bright);font-family:var(--serif);font-size:1.2rem;color:var(--gold)"><span>Total</span><span>$' + (o.total||0).toLocaleString() + '</span></div>'
+    + '</div></div>'
+    + (o.giftNote ? '<div style="margin-top:1rem;background:var(--raised);border:1px solid var(--border);padding:1rem;font-size:.65rem;font-style:italic;color:var(--muted)">🎁 "' + o.giftNote + '"</div>' : '');
+
   modal.style.display='flex';
 }
+
 function closeOrderModal(){ document.getElementById('orderModal').style.display='none'; }
 
 function exportOrders(){
