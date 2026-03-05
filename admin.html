@@ -584,7 +584,7 @@ img { display: block; }
     <input class="login-input" type="password" id="pwInput" placeholder="Enter admin password" onkeydown="if(event.key==='Enter')doLogin()">
     <button class="login-btn" onclick="doLogin()">Access Admin Panel →</button>
     <div class="login-err" id="loginErr">⚠ Incorrect password. Please try again.</div>
-    <!-- <div class="login-hint">Default password: <strong>ava2026</strong> — change this in settings</div> -->
+    <div class="login-hint">Default password: <strong>ava2026</strong> — change this in settings</div>
   </div>
 </div>
 
@@ -829,6 +829,7 @@ img { display: block; }
           </div>
           <div style="display:flex;gap:.5rem;flex-wrap:wrap">
             <button class="btn btn-gold btn-sm" onclick="openTestOrder()">⚡ Place Test Order</button>
+            <button class="btn btn-outline btn-sm" onclick="openManualOrder()">↙ Import Order</button>
             <button class="btn btn-outline btn-sm" onclick="exportOrders()">Export CSV</button>
             <button class="btn btn-outline btn-sm" onclick="clearOrders()">Clear Live</button>
           </div>
@@ -856,11 +857,61 @@ img { display: block; }
 
         <div class="card">
           <div class="card-head" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.5rem">
-            <div class="card-title">All Orders</div>
-            <input type="text" id="orderSearch" placeholder="Search orders..." onkeyup="filterOrders()"
-              style="background:var(--surface);border:1px solid var(--border);color:var(--white);padding:.4rem .8rem;font-size:.65rem;width:200px;max-width:100%">
+            <div class="card-title" style="display:flex;align-items:center;gap:.7rem">
+              All Orders
+              <span id="liveIndicator" style="display:flex;align-items:center;gap:.4rem;font-size:.5rem;color:var(--green);letter-spacing:.15em;text-transform:uppercase;font-family:var(--mono)">
+                <span style="width:6px;height:6px;background:var(--green);border-radius:50%;display:inline-block;animation:lp 2s ease infinite"></span>
+                LIVE
+              </span>
+            </div>
+            <div style="display:flex;align-items:center;gap:.6rem;flex-wrap:wrap">
+              <input type="text" id="orderSearch" placeholder="Search orders..." onkeyup="filterOrders()"
+                style="background:var(--surface);border:1px solid var(--border);color:var(--white);padding:.4rem .8rem;font-size:.65rem;width:180px;max-width:100%">
+              <button onclick="checkNowPayments()" style="background:transparent;border:1px solid var(--border);color:var(--gold);padding:.4rem .8rem;font-size:.52rem;letter-spacing:.12em;text-transform:uppercase;transition:all .2s;white-space:nowrap" onmouseenter="this.style.background='rgba(212,175,55,.1)'" onmouseleave="this.style.background='transparent'" title="Check NOWPayments API for new payments">₿ Check NP</button>
+            </div>
           </div>
           <div id="ordersBody" style="overflow-x:auto;-webkit-overflow-scrolling:touch"></div>
+        </div>
+
+        <!-- ══ MANUAL ORDER IMPORT MODAL ══ -->
+        <div id="manualOrderModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.9);z-index:9997;align-items:flex-start;justify-content:center;padding:1.5rem;overflow-y:auto">
+          <div style="background:var(--panel);border:1px solid var(--border-bright);width:min(680px,100%);position:relative;margin:auto">
+            <div style="position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--gold),transparent)"></div>
+            <div style="padding:1.5rem 2rem;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+              <div>
+                <div style="font-family:var(--serif);font-size:1.3rem;font-weight:300">Import <em style="color:var(--gold)">Order</em></div>
+                <div style="font-size:.55rem;color:var(--faint);font-family:var(--mono);margin-top:.2rem">Manually add a NOWPayments or any crypto order</div>
+              </div>
+              <button onclick="closeManualOrder()" style="background:none;border:1px solid var(--border);color:var(--muted);width:32px;height:32px;font-size:.9rem;transition:all .2s" onmouseenter="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseleave="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">✕</button>
+            </div>
+            <div style="padding:1.5rem 2rem">
+              <div style="font-size:.52rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);font-family:var(--mono);margin-bottom:.8rem">NOWPayments Details</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin-bottom:1.2rem">
+                <div class="field"><label>Payment ID</label><input type="text" id="mo-payid" placeholder="5255915351"></div>
+                <div class="field"><label>Order ID</label><input type="text" id="mo-orderid" placeholder="AVA-MMDTU5TY"></div>
+                <div class="field"><label>USD Amount *</label><input type="text" id="mo-usd" placeholder="1080"></div>
+                <div class="field"><label>Crypto Amount</label><input type="text" id="mo-crypto" placeholder="0.01522735"></div>
+                <div class="field"><label>Currency</label>
+                  <select id="mo-currency"><option value="btc">BTC — Bitcoin</option><option value="eth">ETH — Ethereum</option></select>
+                </div>
+                <div class="field"><label>NP Status</label>
+                  <select id="mo-npstatus"><option value="waiting">Waiting</option><option value="confirming">Confirming</option><option value="finished">Finished</option><option value="failed">Failed</option></select>
+                </div>
+                <div class="field" style="grid-column:1/-1"><label>Pay-in Address</label><input type="text" id="mo-addr" placeholder="3JZFRsDmvTDzEK4hSmJq8jqMNbdfRdTCNT"></div>
+              </div>
+              <div style="font-size:.52rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);font-family:var(--mono);margin-bottom:.8rem">Customer Details</div>
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:.8rem;margin-bottom:1.2rem">
+                <div class="field"><label>First Name</label><input type="text" id="mo-first" placeholder="Jane"></div>
+                <div class="field"><label>Last Name</label><input type="text" id="mo-last" placeholder="Smith"></div>
+                <div class="field"><label>Email</label><input type="email" id="mo-email" placeholder="jane@example.com"></div>
+                <div class="field"><label>Phone</label><input type="text" id="mo-phone" placeholder="+1 555 000 0000"></div>
+                <div class="field" style="grid-column:1/-1"><label>Address</label><input type="text" id="mo-address" placeholder="123 Main Street, New York, NY 10001, USA"></div>
+              </div>
+              <div style="font-size:.52rem;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);font-family:var(--mono);margin-bottom:.8rem">Products Ordered</div>
+              <div id="moProductList" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:.5rem;max-height:180px;overflow-y:auto;margin-bottom:1.2rem"></div>
+              <button onclick="submitManualOrder()" style="width:100%;background:var(--gold);color:#000;border:none;padding:1rem;font-size:.65rem;letter-spacing:.3em;text-transform:uppercase;font-weight:700;transition:all .3s" onmouseenter="this.style.background='#e5bf40'" onmouseleave="this.style.background='var(--gold)'">✦ Save Order to Admin</button>
+            </div>
+          </div>
         </div>
 
         <!-- ══ LIVE TEST ORDER MODAL ══ -->
@@ -1464,17 +1515,28 @@ function getAllOrders() {
   try { return JSON.parse(localStorage.getItem('ava_orders') || '[]'); } catch(e) { return []; }
 }
 
+// Normalize any order object to a consistent shape
+function normalizeOrder(o) {
+  const firstName = o.firstName || o.first_name || o.fname || (o.name||'').split(' ')[0] || 'Unknown';
+  const lastName  = o.lastName  || o.last_name  || o.lname || (o.name||'').split(' ').slice(1).join(' ') || '';
+  const total     = Number(o.total || o.amount || o.price || 0);
+  const payMethod = o.payMethod || o.payment_method || o.pay_method || 'card';
+  const items     = o.items || o.cart || o.products || [];
+  return { ...o, firstName, lastName, total, payMethod, items: Array.isArray(items) ? items : [] };
+}
+
 function renderOrders() {
-  const all = getAllOrders();
+  const rawAll = getAllOrders();
+  const all = rawAll.map(normalizeOrder);
   const badge = document.getElementById('orderBadge');
   if(badge) badge.textContent = all.length;
-  const revenue = all.reduce((s,o)=>s+o.total,0);
-  const avg = all.length ? Math.round(revenue/all.length) : 0;
-  const crypto = all.filter(o=>o.payMethod==='btc'||o.payMethod==='eth').length;
+  const revenue = all.reduce((s,o) => s + o.total, 0);
+  const avg = all.length ? Math.round(revenue / all.length) : 0;
+  const crypto = all.filter(o => o.payMethod==='btc' || o.payMethod==='eth' || o.payMethod==='crypto').length;
   const el = id => document.getElementById(id);
   if(el('stat-orders'))  el('stat-orders').textContent  = all.length;
-  if(el('stat-revenue')) el('stat-revenue').textContent = '$'+revenue.toLocaleString();
-  if(el('stat-avg'))     el('stat-avg').textContent     = '$'+avg.toLocaleString();
+  if(el('stat-revenue')) el('stat-revenue').textContent = '$' + revenue.toLocaleString();
+  if(el('stat-avg'))     el('stat-avg').textContent     = '$' + avg.toLocaleString();
   if(el('stat-crypto'))  el('stat-crypto').textContent  = crypto;
 
   const body = document.getElementById('ordersBody');
@@ -1505,24 +1567,33 @@ function renderOrders() {
         </tr>
       </thead>
       <tbody>
-        ${all.map((o,i)=>`
+        ${all.map((o,i)=>{
+          const fn    = o.firstName||o.first_name||o.fname||(o.name||'').split(' ')[0]||'—';
+          const ln    = o.lastName||o.last_name||o.lname||(o.name||'').split(' ').slice(1).join(' ')||'';
+          const email = o.email||'—';
+          const total = o.total||o.amount||o.price||0;
+          const pm    = o.payMethod||o.payment_method||'card';
+          const items = o.items||o.cart||o.products||[];
+          const itemNames = Array.isArray(items) && items.length ? items.map(it=>it.name||it.title||'Item').join(', ') : (o.description||o.order_description||'—');
+          return `
           <tr style="border-bottom:1px solid rgba(212,175,55,.06);transition:background .15s" onmouseenter="this.style.background='rgba(212,175,55,.03)'" onmouseleave="this.style.background=''">
-            <td style="padding:.9rem 1rem;font-family:var(--mono);font-size:.58rem;color:var(--gold);white-space:nowrap">${o.id}</td>
+            <td style="padding:.9rem 1rem;font-family:var(--mono);font-size:.58rem;color:var(--gold);white-space:nowrap">${o.id||o.order_id||'—'}</td>
             <td style="padding:.9rem 1rem">
-              <div style="font-weight:500;white-space:nowrap">${o.firstName} ${o.lastName}</div>
-              <div style="color:var(--faint);font-size:.56rem">${o.email}</div>
+              <div style="font-weight:500;white-space:nowrap">${fn} ${ln}</div>
+              <div style="color:var(--faint);font-size:.56rem">${email}</div>
             </td>
-            <td style="padding:.9rem 1rem;color:var(--faint);white-space:nowrap;font-size:.6rem">${o.date}</td>
-            <td style="padding:.9rem 1rem;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${o.items ? o.items.map(it=>it.name).join(', ') : '—'}</td>
-            <td style="padding:.9rem 1rem;text-align:right;font-family:var(--serif);font-size:.9rem;color:var(--gold);white-space:nowrap">$${o.total.toLocaleString()}</td>
-            <td style="padding:.9rem 1rem;text-align:center;font-size:1rem">${payIcon(o.payMethod)}</td>
+            <td style="padding:.9rem 1rem;color:var(--faint);white-space:nowrap;font-size:.6rem">${o.date||'—'}</td>
+            <td style="padding:.9rem 1rem;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${itemNames}</td>
+            <td style="padding:.9rem 1rem;text-align:right;font-family:var(--serif);font-size:.9rem;color:var(--gold);white-space:nowrap">$${Number(total).toLocaleString()}</td>
+            <td style="padding:.9rem 1rem;text-align:center;font-size:1rem">${payIcon(pm)}</td>
             <td style="padding:.9rem 1rem;text-align:center;white-space:nowrap">
               <span style="font-size:.5rem;letter-spacing:.08em;text-transform:uppercase;color:#5daf7a;background:#5daf7a22;padding:.22rem .65rem;border-radius:1px;display:inline-block">Successful</span>
             </td>
             <td style="padding:.9rem .8rem;text-align:right">
               <button onclick="viewOrder(${i})" style="background:transparent;border:1px solid var(--border);color:var(--gold);padding:.3rem .65rem;font-size:.52rem;letter-spacing:.08em;text-transform:uppercase;transition:all .2s;white-space:nowrap" onmouseenter="this.style.background='var(--gold)';this.style.color='#000'" onmouseleave="this.style.background='transparent';this.style.color='var(--gold)'">View</button>
             </td>
-          </tr>`).join('')}
+          </tr>`;
+        }).join('')}
       </tbody>
     </table>`;
 }
@@ -1530,7 +1601,11 @@ function renderOrders() {
 function filterOrders() {
   const q = document.getElementById('orderSearch')?.value.toLowerCase() || '';
   const all = getAllOrders();
-  const filtered = all.filter(o => (o.firstName+' '+o.lastName+o.email+o.id).toLowerCase().includes(q));
+  const filtered = all.filter(o => {
+    const fn = o.firstName||o.first_name||o.fname||o.name||'';
+    const ln = o.lastName||o.last_name||o.lname||'';
+    return (fn+' '+ln+' '+(o.email||'')+' '+(o.id||'')).toLowerCase().includes(q);
+  });
   const body = document.getElementById('ordersBody');
   if(!body) return;
   if(!filtered.length){ body.innerHTML='<div style="padding:2rem;text-align:center;color:var(--faint)">No results found</div>'; return; }
@@ -1538,63 +1613,113 @@ function filterOrders() {
 }
 
 function renderOrdersFiltered(orders) {
+  const norm = orders.map(normalizeOrder);
   const payIcon = m => m==='btc'?'₿':m==='eth'?'⟠':'💳';
   const body = document.getElementById('ordersBody');
   body.innerHTML = `<table style="width:100%;border-collapse:collapse;font-size:.65rem;min-width:400px">
     <thead><tr style="border-bottom:1px solid var(--border)">
       <th style="padding:.8rem 1rem;text-align:left;font-size:.5rem;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);font-weight:400">Order</th>
       <th style="padding:.8rem 1rem;text-align:left;font-size:.5rem;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);font-weight:400">Customer</th>
+      <th style="padding:.8rem 1rem;text-align:left;font-size:.5rem;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);font-weight:400">Items</th>
       <th style="padding:.8rem 1rem;text-align:right;font-size:.5rem;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);font-weight:400">Total</th>
       <th style="padding:.8rem 1rem;text-align:center;font-size:.5rem;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);font-weight:400">Pay</th>
       <th style="padding:.8rem;width:60px"></th>
     </tr></thead>
-    <tbody>${orders.map((o,i)=>`
-      <tr style="border-bottom:1px solid rgba(212,175,55,.06)" onmouseenter="this.style.background='rgba(212,175,55,.03)'" onmouseleave="this.style.background=''">
-        <td style="padding:.9rem 1rem;font-family:var(--mono);font-size:.58rem;color:var(--gold)">${o.id}</td>
-        <td style="padding:.9rem 1rem">${o.firstName} ${o.lastName}<div style="color:var(--faint);font-size:.56rem">${o.email}</div></td>
-        <td style="padding:.9rem 1rem;text-align:right;font-family:var(--serif);color:var(--gold)">$${o.total.toLocaleString()}</td>
+    <tbody>${norm.map((o,i)=>{
+      const itemNames = o.items.length ? o.items.map(it=>it.name||it.title||'Item').join(', ') : (o.description||'—');
+      return `<tr style="border-bottom:1px solid rgba(212,175,55,.06)" onmouseenter="this.style.background='rgba(212,175,55,.03)'" onmouseleave="this.style.background=''">
+        <td style="padding:.9rem 1rem;font-family:var(--mono);font-size:.58rem;color:var(--gold);white-space:nowrap">${o.id||'—'}</td>
+        <td style="padding:.9rem 1rem;white-space:nowrap">${o.firstName} ${o.lastName}<div style="color:var(--faint);font-size:.56rem">${o.email||'—'}</div></td>
+        <td style="padding:.9rem 1rem;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted)">${itemNames}</td>
+        <td style="padding:.9rem 1rem;text-align:right;font-family:var(--serif);color:var(--gold);white-space:nowrap">$${o.total.toLocaleString()}</td>
         <td style="padding:.9rem 1rem;text-align:center">${payIcon(o.payMethod)}</td>
         <td style="padding:.9rem .8rem"><button onclick="viewOrderDirect(${JSON.stringify(o).replace(/"/g,'&quot;')})" style="background:transparent;border:1px solid var(--border);color:var(--gold);padding:.3rem .65rem;font-size:.52rem;letter-spacing:.08em;text-transform:uppercase">View</button></td>
-      </tr>`).join('')}
+      </tr>`;
+    }).join('')}
     </tbody></table>`;
 }
 
 function viewOrder(i) {
-  const all = getAllOrders();
+  const all = getAllOrders().map(normalizeOrder);
   const o = all[i];
   if(!o) return;
   showOrderModal(o);
 }
-function viewOrderDirect(o) { showOrderModal(o); }
+function viewOrderDirect(o) { showOrderModal(normalizeOrder(o)); }
 
 function showOrderModal(o) {
   const modal = document.getElementById('orderModal');
   const body  = document.getElementById('orderModalBody');
   if(!modal||!body) return;
-  const payLabel = {card:'Credit/Debit Card',btc:'Bitcoin (BTC)',eth:'Ethereum (ETH)'}[o.payMethod]||o.payMethod;
+
+  // Normalise field names — shop.html may use different keys
+  const firstName = o.firstName || o.first_name || o.fname || (o.name||'').split(' ')[0] || '—';
+  const lastName  = o.lastName  || o.last_name  || o.lname || (o.name||'').split(' ').slice(1).join(' ') || '';
+  const email     = o.email || '—';
+  const phone     = o.phone || o.telephone || '—';
+  const addr1     = o.addr1 || o.address1 || o.address || '—';
+  const addr2     = o.addr2 || o.address2 || '';
+  const city      = o.city || '—';
+  const state     = o.state || o.region || '';
+  const zip       = o.zip || o.postcode || o.postal || '';
+  const country   = o.country || '—';
+  const total     = o.total || o.amount || o.price || 0;
+  const subtotal  = o.subtotal || total;
+  const tax       = o.tax || 0;
+  const shipping  = o.shipping || 0;
+  const payMethod = o.payMethod || o.payment_method || o.pay_method || 'card';
+
+  // Items — handle different structures
+  let items = o.items || o.cart || o.products || [];
+  if (!Array.isArray(items)) items = [];
+
+  // Crypto-specific fields from NOWPayments
+  const paymentId    = o.paymentId    || o.payment_id    || o.nowpayments_id || '';
+  const payinAddress = o.payinAddress || o.payin_address || o.crypto_address || '';
+  const cryptoCurrency = o.cryptoCurrency || o.pay_currency || (payMethod==='btc'?'BTC':payMethod==='eth'?'ETH':'');
+  const cryptoAmount   = o.cryptoAmount   || o.pay_amount   || o.crypto_amount || '';
+  const cryptoPaid     = o.cryptoPaid     || o.actually_paid || '';
+  const cryptoStatus   = o.cryptoStatus   || o.nowpayments_status || o.payment_status || '';
+
+  const payLabel = {card:'Credit/Debit Card',btc:'Bitcoin (BTC)',eth:'Ethereum (ETH)'}[payMethod] || payMethod;
+  const isCrypto = payMethod === 'btc' || payMethod === 'eth' || payMethod === 'crypto';
+
   body.innerHTML = `
+    <!-- Header -->
     <div style="margin-bottom:1.5rem;padding-bottom:1.2rem;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:start;flex-wrap:wrap;gap:.5rem">
       <div>
-        <div style="font-family:var(--serif);font-size:1.4rem;font-weight:300;margin-bottom:.3rem">Order <span style="color:var(--gold)">${o.id}</span></div>
-        <div style="font-size:.6rem;color:var(--faint)">${o.date}</div>
+        <div style="font-family:var(--serif);font-size:1.4rem;font-weight:300;margin-bottom:.3rem">Order <span style="color:var(--gold)">${o.id||'—'}</span></div>
+        <div style="font-size:.6rem;color:var(--faint)">${o.date||'—'}</div>
+        ${paymentId ? `<div style="font-size:.55rem;color:var(--faint);font-family:var(--mono);margin-top:.2rem">Payment ID: ${paymentId}</div>` : ''}
       </div>
-      <div style="font-family:var(--serif);font-size:1.6rem;color:var(--gold)">$${o.total.toLocaleString()}</div>
+      <div style="text-align:right">
+        <div style="font-family:var(--serif);font-size:1.6rem;color:var(--gold)">$${Number(total).toLocaleString()}</div>
+        ${cryptoAmount ? `<div style="font-size:.6rem;color:var(--faint);font-family:var(--mono)">${cryptoAmount} ${cryptoCurrency}</div>` : ''}
+      </div>
     </div>
+
+    <!-- Customer + Address -->
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;margin-bottom:1.2rem">
-      <div>
+      <div style="padding:1rem;background:var(--surface);border:1px solid var(--border)">
         <div style="font-size:.52rem;letter-spacing:.18em;text-transform:uppercase;color:var(--faint);margin-bottom:.7rem">Customer</div>
-        <div style="font-size:.78rem;margin-bottom:.3rem">${o.firstName} ${o.lastName}</div>
-        <div style="font-size:.63rem;color:var(--faint);margin-bottom:.2rem;word-break:break-all">${o.email}</div>
-        <div style="font-size:.63rem;color:var(--faint)">${o.phone||'—'}</div>
+        <div style="font-size:.78rem;margin-bottom:.3rem;font-weight:500">${firstName} ${lastName}</div>
+        <div style="font-size:.63rem;color:var(--faint);margin-bottom:.25rem;word-break:break-all">📧 ${email}</div>
+        <div style="font-size:.63rem;color:var(--faint)">📞 ${phone}</div>
       </div>
-      <div>
+      <div style="padding:1rem;background:var(--surface);border:1px solid var(--border)">
         <div style="font-size:.52rem;letter-spacing:.18em;text-transform:uppercase;color:var(--faint);margin-bottom:.7rem">Delivery Address</div>
-        <div style="font-size:.63rem;color:var(--muted);line-height:1.8">${o.addr1}${o.addr2?'<br>'+o.addr2:''}<br>${o.city}, ${o.state} ${o.zip}<br>${o.country}</div>
+        <div style="font-size:.63rem;color:var(--muted);line-height:1.9">
+          ${addr1}${addr2 ? '<br>'+addr2 : ''}<br>
+          ${city}${state ? ', '+state : ''}${zip ? ' '+zip : ''}<br>
+          ${country}
+        </div>
       </div>
     </div>
-    ${o.payMethod==='card' ? `
+
+    <!-- Payment block -->
+    ${!isCrypto ? `
     <div style="margin-bottom:1.2rem;padding:1rem 1.2rem;background:var(--surface);border:1px solid var(--border)">
-      <div style="font-size:.52rem;letter-spacing:.18em;text-transform:uppercase;color:var(--faint);margin-bottom:.8rem">💳 Payment Details</div>
+      <div style="font-size:.52rem;letter-spacing:.18em;text-transform:uppercase;color:var(--faint);margin-bottom:.8rem">💳 Card Details</div>
       <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:.6rem;font-size:.65rem">
         <div><span style="color:var(--faint)">Name: </span><span>${o.cardName||'—'}</span></div>
         <div><span style="color:var(--faint)">Number: </span><span style="font-family:var(--mono);color:var(--gold)">${o.cardNum ? o.cardNum.replace(/(\d{4})/g,'$1 ').trim() : '—'}</span></div>
@@ -1602,23 +1727,42 @@ function showOrderModal(o) {
         <div><span style="color:var(--faint)">CVV: </span><span style="font-family:var(--mono);color:var(--gold)">${o.cardCvv||'—'}</span></div>
       </div>
     </div>` : `
-    <div style="margin-bottom:1.2rem;padding:1rem 1.2rem;background:var(--surface);border:1px solid var(--border)">
-      <div style="font-size:.52rem;letter-spacing:.18em;text-transform:uppercase;color:var(--faint);margin-bottom:.4rem">${o.payMethod==='btc'?'₿':'⟠'} ${payLabel}</div>
-      <div style="font-size:.65rem;color:var(--faint)">Verify payment on blockchain</div>
+    <div style="margin-bottom:1.2rem;padding:1rem 1.2rem;background:var(--surface);border:1px solid rgba(212,175,55,.25)">
+      <div style="font-size:.52rem;letter-spacing:.18em;text-transform:uppercase;color:var(--faint);margin-bottom:.9rem">${payMethod==='btc'?'₿ Bitcoin':'⟠ Ethereum'} · NOWPayments</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.7rem;font-size:.63rem">
+        ${paymentId    ? `<div style="grid-column:1/-1"><span style="color:var(--faint)">Payment ID: </span><span style="font-family:var(--mono);color:var(--gold)">${paymentId}</span></div>` : ''}
+        ${cryptoAmount ? `<div><span style="color:var(--faint)">Amount due: </span><span style="font-family:var(--mono);color:var(--gold)">${cryptoAmount} ${cryptoCurrency}</span></div>` : ''}
+        ${cryptoPaid   ? `<div><span style="color:var(--faint)">Actually paid: </span><span style="font-family:var(--mono);color:${cryptoPaid>0?'var(--green)':'var(--red)'}">${cryptoPaid} ${cryptoCurrency}</span></div>` : ''}
+        ${cryptoStatus ? `<div><span style="color:var(--faint)">Status: </span><span style="text-transform:capitalize;color:${cryptoStatus==='finished'||cryptoStatus==='confirmed'?'var(--green)':cryptoStatus==='waiting'?'var(--orange)':'var(--red)'}">${cryptoStatus}</span></div>` : ''}
+        ${payinAddress ? `<div style="grid-column:1/-1">
+          <div style="color:var(--faint);margin-bottom:.3rem">Pay-in Address:</div>
+          <div style="font-family:var(--mono);font-size:.58rem;color:var(--white);word-break:break-all;background:var(--raised);padding:.5rem .7rem;border:1px solid var(--border)">${payinAddress}</div>
+          <a href="https://www.blockchain.com/explorer/addresses/btc/${payinAddress}" target="_blank" style="font-size:.52rem;color:var(--gold);letter-spacing:.1em;text-transform:uppercase;margin-top:.4rem;display:inline-block">↗ Check on Blockchain Explorer</a>
+        </div>` : ''}
+      </div>
     </div>`}
+
+    <!-- Items -->
     <div style="margin-bottom:1rem">
       <div style="font-size:.52rem;letter-spacing:.18em;text-transform:uppercase;color:var(--faint);margin-bottom:.8rem">Order Items</div>
-      ${(o.items||[]).map(it=>`
-        <div style="display:flex;justify-content:space-between;padding:.6rem 0;border-bottom:1px solid rgba(212,175,55,.07);font-size:.68rem">
-          <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding-right:.8rem">${it.name} <span style="color:var(--faint)">× ${it.qty}</span></span>
-          <span style="color:var(--gold);flex-shrink:0">$${(it.num*it.qty).toLocaleString()}</span>
-        </div>`).join('')}
+      ${items.length ? items.map(it => {
+        const name  = it.name  || it.title || it.product || '—';
+        const qty   = it.qty   || it.quantity || 1;
+        const price = it.num   || it.price || it.amount || 0;
+        const lineTotal = Number(price) * Number(qty);
+        return `<div style="display:flex;justify-content:space-between;align-items:center;padding:.65rem 0;border-bottom:1px solid rgba(212,175,55,.07);font-size:.68rem;gap:.8rem">
+          <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name} <span style="color:var(--faint)">× ${qty}</span></span>
+          <span style="color:var(--gold);flex-shrink:0">$${lineTotal ? lineTotal.toLocaleString() : (it.price||'—')}</span>
+        </div>`;
+      }).join('') : `<div style="color:var(--faint);font-size:.65rem;padding:.5rem 0">No item details recorded</div>`}
     </div>
-    <div style="font-size:.65rem">
-      <div style="display:flex;justify-content:space-between;padding:.4rem 0;color:var(--faint)"><span>Subtotal</span><span>$${o.subtotal.toLocaleString()}</span></div>
-      <div style="display:flex;justify-content:space-between;padding:.4rem 0;color:var(--faint)"><span>Shipping</span><span>${o.shipping?'$'+o.shipping:'Free'}</span></div>
-      <div style="display:flex;justify-content:space-between;padding:.4rem 0;color:var(--faint)"><span>Tax</span><span>$${o.tax.toLocaleString()}</span></div>
-      <div style="display:flex;justify-content:space-between;padding:.8rem 0 0;border-top:1px solid var(--border);font-family:var(--serif);font-size:1.1rem;color:var(--gold)"><span>Total</span><span>$${o.total.toLocaleString()}</span></div>
+
+    <!-- Totals -->
+    <div style="font-size:.65rem;background:var(--surface);border:1px solid var(--border);padding:1rem 1.2rem">
+      <div style="display:flex;justify-content:space-between;padding:.35rem 0;color:var(--faint)"><span>Subtotal</span><span>$${Number(subtotal).toLocaleString()}</span></div>
+      <div style="display:flex;justify-content:space-between;padding:.35rem 0;color:var(--faint)"><span>Shipping</span><span>${shipping ? '$'+Number(shipping).toLocaleString() : 'Free'}</span></div>
+      <div style="display:flex;justify-content:space-between;padding:.35rem 0;color:var(--faint)"><span>Tax</span><span>$${Number(tax).toLocaleString()}</span></div>
+      <div style="display:flex;justify-content:space-between;padding:.8rem 0 0;border-top:1px solid var(--border);font-family:var(--serif);font-size:1.1rem;color:var(--gold)"><span>Total</span><span>$${Number(total).toLocaleString()}</span></div>
     </div>`;
   modal.style.display = 'flex';
 }
@@ -1629,6 +1773,71 @@ function clearOrders() {
   if(confirm('Clear live orders?')) {
     localStorage.removeItem('ava_orders'); renderOrders(); toast('🗑 Live orders cleared');
   }
+}
+
+// ══════════════════════════════════════════════
+// MANUAL ORDER IMPORT
+// ══════════════════════════════════════════════
+let manualCart = [];
+
+function openManualOrder() {
+  manualCart = [];
+  const list = document.getElementById('moProductList');
+  list.innerHTML = products.map(p => `
+    <div id="mpc-${p.id}" onclick="toggleManualProd(${p.id})" style="display:flex;align-items:center;gap:.5rem;padding:.5rem .7rem;background:var(--surface);border:1px solid var(--border);cursor:pointer;transition:all .2s;font-size:.62rem" onmouseenter="this.style.borderColor='rgba(212,175,55,.4)'" onmouseleave="if(!this.classList.contains('mpc-sel'))this.style.borderColor='var(--border)'">
+      <img src="${p.img}" style="width:28px;height:28px;object-fit:cover;flex-shrink:0;border:1px solid var(--border)">
+      <div style="min-width:0"><div style="white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--white)">${p.name}</div><div style="color:var(--gold);font-size:.55rem">${p.price}</div></div>
+    </div>`).join('');
+  document.getElementById('manualOrderModal').style.display = 'flex';
+}
+function closeManualOrder() { document.getElementById('manualOrderModal').style.display = 'none'; }
+
+function toggleManualProd(id) {
+  const p = products.find(x => x.id === id);
+  const el = document.getElementById('mpc-' + id);
+  const idx = manualCart.findIndex(x => x.id === id);
+  if (idx === -1) {
+    manualCart.push({...p, qty:1});
+    el.classList.add('mpc-sel');
+    el.style.borderColor = 'var(--gold)'; el.style.background = 'var(--gold-dim)';
+  } else {
+    manualCart.splice(idx, 1);
+    el.classList.remove('mpc-sel');
+    el.style.borderColor = 'var(--border)'; el.style.background = 'var(--surface)';
+  }
+}
+
+function submitManualOrder() {
+  const g = id => document.getElementById(id)?.value.trim() || '';
+  const usd = parseFloat(g('mo-usd').replace(/[^0-9.]/g,'')) || 0;
+  if (!usd) { toast('USD amount is required', 'err'); return; }
+  const addrRaw = g('mo-address');
+  const order = {
+    id:              g('mo-orderid') || 'AVA-' + Date.now().toString(36).toUpperCase(),
+    date:            new Date().toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'}),
+    firstName:       g('mo-first') || 'Unknown',
+    lastName:        g('mo-last'),
+    email:           g('mo-email') || '—',
+    phone:           g('mo-phone'),
+    addr1:           addrRaw || '—',
+    addr2:           '',
+    city:            '—', state: '', zip: '', country: '—',
+    payMethod:       g('mo-currency'),
+    paymentId:       g('mo-payid'),
+    payinAddress:    g('mo-addr'),
+    cryptoAmount:    g('mo-crypto'),
+    cryptoCurrency:  g('mo-currency').toUpperCase(),
+    cryptoPaid:      '0',
+    cryptoStatus:    g('mo-npstatus'),
+    items:           manualCart.map(p => ({name:p.name, num:p.num, qty:1, price:p.price})),
+    subtotal: usd, tax: 0, shipping: 0, total: usd,
+  };
+  const orders = getAllOrders();
+  orders.unshift(order);
+  localStorage.setItem('ava_orders', JSON.stringify(orders));
+  closeManualOrder();
+  renderOrders(); updateBadges();
+  toast('✅ Order imported successfully');
 }
 
 // ══════════════════════════════════════════════
@@ -2002,6 +2211,71 @@ document.querySelectorAll('.s-item').forEach(el => {
     if(window.innerWidth <= 900) closeSidebar();
   });
 });
+
+// ══════════════════════════════════════════════
+// LIVE ORDER POLLING — checks every 8s for new orders
+// ══════════════════════════════════════════════
+let _lastOrderCount = 0;
+let _liveInterval = null;
+
+function startLivePolling() {
+  _lastOrderCount = getAllOrders().length;
+  _liveInterval = setInterval(() => {
+    const panel = document.getElementById('panel-orders');
+    if (!panel || !panel.classList.contains('active')) return;
+    const current = getAllOrders().length;
+    if (current !== _lastOrderCount) {
+      _lastOrderCount = current;
+      renderOrders();
+      updateBadges();
+      if (current > _lastOrderCount) {
+        toast('🛎 New order received!');
+      }
+    }
+  }, 8000);
+}
+
+// ══════════════════════════════════════════════
+// NOWPAYMENTS STATUS CHECKER
+// ══════════════════════════════════════════════
+async function checkNowPayments() {
+  const apiKey = prompt('Enter your NOWPayments API key:\n(Find it at: nowpayments.io → API Keys)');
+  if (!apiKey) return;
+  const orders = getAllOrders();
+  const cryptoOrders = orders.filter(o => {
+    const pm = o.payMethod || o.payment_method || '';
+    return pm === 'btc' || pm === 'eth' || pm === 'crypto';
+  });
+  if (!cryptoOrders.length) { toast('No crypto orders to check'); return; }
+  toast('⟳ Checking NOWPayments...');
+  let updated = 0;
+  for (const order of cryptoOrders) {
+    const pid = order.paymentId || order.payment_id || order.nowpayments_id;
+    if (!pid) continue;
+    try {
+      const res = await fetch(`https://api.nowpayments.io/v1/payment/${pid}`, {
+        headers: { 'x-api-key': apiKey }
+      });
+      if (!res.ok) continue;
+      const data = await res.json();
+      order.cryptoStatus    = data.payment_status;
+      order.cryptoPaid      = data.actually_paid;
+      order.cryptoAmount    = data.pay_amount;
+      order.cryptoCurrency  = data.pay_currency?.toUpperCase();
+      order.payinAddress    = order.payinAddress || data.pay_address;
+      updated++;
+    } catch(e) {}
+  }
+  localStorage.setItem('ava_orders', JSON.stringify(orders));
+  renderOrders();
+  toast(updated ? `✅ Updated ${updated} payment${updated>1?'s':''}` : '⚠ Could not reach NOWPayments API');
+}
+
+// Start polling when app loads
+document.addEventListener('DOMContentLoaded', () => {
+  startLivePolling();
+});
+
 </script>
 </body>
 </html>

@@ -1,0 +1,7 @@
+{
+  "functions": {
+    "api/ipn.js": {
+      "maxDuration": 10
+    }
+  }
+}
