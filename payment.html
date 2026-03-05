@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+PHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiBmaWxsPSIjMDcwNzA3Ii8+PHRleHQgeD0iMTYiIHk9IjIzIiBmb250LWZhbWlseT0ic2VyaWYiIGZvbnQtc2l6ZT0iMjIiIGZvbnQtd2VpZ2h0PSIzMDAiIGZpbGw9IiNENEFGMzciIHRleHQtYW5jaG9yPSJtaWRkbGUiIGxldHRlci1zcGFjaW5nPSIxIj5BPC90ZXh0PjxyZWN0IHg9IjIiIHk9IjMwIiB3aWR0aD0iMjgiIGhlaWdodD0iMSIgZmlsbD0iI0Q0QUYzNyIgb3BhY2l0eT0iMC40Ii8+PC9zdmc+">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Payment — Ava Jewelry</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400;1,600&family=Montserrat:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
@@ -91,7 +93,7 @@ img{display:block}
 /* PRODUCT CARD */
 .pc{background:var(--card);border:1px solid var(--border);overflow:hidden;transition:all .35s;animation:cardIn .4s ease both}
 @keyframes cardIn{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
-.pc:hover{border-color:var(--bh);transform:translateY(-6px);box-shadow:0 22px 55px rgba(0,0,0,.6)}
+.pc:hover{border-color:var(--bh);box-shadow:0 22px 55px rgba(0,0,0,.6)}
 .pc-img{position:relative}
 .iw{position:relative;overflow:hidden;background:var(--card2)}
 .iw .sk{position:absolute;inset:0;background:linear-gradient(90deg,var(--card) 25%,var(--card2) 50%,var(--card) 75%);background-size:200% 100%;animation:sk 1.4s infinite;z-index:1}
@@ -118,7 +120,7 @@ img{display:block}
 .atc:hover{background:var(--gold);color:var(--black);border-color:var(--gold)}
 /* BTN */
 .btn-g{background:var(--gold);color:var(--black);border:none;padding:1rem 2.5rem;font-size:.65rem;letter-spacing:.3em;text-transform:uppercase;font-weight:700;transition:all .3s;display:inline-block}
-.btn-g:hover{background:var(--gl);transform:translateY(-2px)}
+.btn-g:hover{background:var(--gl)}
 .btn-o{background:transparent;color:var(--white);border:1px solid rgba(255,255,255,.3);padding:1rem 2.5rem;font-size:.65rem;letter-spacing:.3em;text-transform:uppercase;transition:all .3s;display:inline-block}
 .btn-o:hover{border-color:var(--gold);color:var(--gold)}
 /* FOOTER */
@@ -208,7 +210,7 @@ footer{background:var(--dark);border-top:1px solid var(--border);padding:5rem 5r
 .si-name{flex:1;font-family:'Cormorant Garamond',serif;font-size:.82rem;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .si-price{font-size:.72rem;color:var(--gold);white-space:nowrap}
 .cchk{width:100%;background:var(--gold);color:var(--black);border:none;padding:1.2rem;font-size:.7rem;letter-spacing:.3em;text-transform:uppercase;font-weight:700;transition:all .3s;margin-top:1.5rem;display:block;text-align:center}
-.cchk:hover{background:var(--gl);transform:translateY(-2px)}
+.cchk:hover{background:var(--gl)}
 .pay-icons{display:flex;gap:.8rem;margin-top:1.5rem;justify-content:center;opacity:.4;font-size:.65rem;letter-spacing:.1em;color:var(--gray)}
 .trust{margin-top:2rem;padding-top:1.5rem;border-top:1px solid var(--border)}
 .trust-row{display:flex;align-items:center;gap:.7rem;margin-bottom:.8rem;font-size:.65rem;color:var(--wd)}
@@ -218,6 +220,16 @@ footer{background:var(--dark);border-top:1px solid var(--border);padding:5rem 5r
 @media(max-width:1024px){.cwrap{padding:2rem 1.5rem}.cg2{grid-template-columns:1fr;gap:2rem}.csumm{position:static}}
 @media(max-width:768px){.cwrap{padding:1.5rem 1rem}.frow{grid-template-columns:1fr}.frow.tri{grid-template-columns:1fr 1fr}.pay-tab span{display:none}}
 @media(max-width:480px){.frow.tri{grid-template-columns:1fr}}
+
+@media (hover: none), (pointer: coarse) {
+  body{cursor:auto!important}button{cursor:pointer!important}a{cursor:pointer!important}
+  .cur,.cring{display:none!important}
+  .cchk:hover,.btn-g:hover,.btn-o:hover,.atc:hover,.ccta:hover,.btop:hover{transform:none!important}
+  .pc:hover{transform:none!important;box-shadow:none!important;border-color:var(--border)!important}
+  .pc:hover .pc-img img{transform:none!important}.pc:hover .pover{opacity:0!important}
+  .cchk,.btn-g,.btn-o,.atc,.ccta,.nib,.pay-tab{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
+  .nib{width:44px!important;height:44px!important}
+}
 </style>
 </head>
 <body>
@@ -256,9 +268,9 @@ footer{background:var(--dark);border-top:1px solid var(--border);padding:5rem 5r
   <ul class="nav-links"><li><a href="index.html" class="nl">Home</a></li><li><a href="shop.html" class="nl">Shop</a></li><li><a href="shop.html?cat=Watches" class="nl">Watches</a></li><li><a href="shop.html?cat=Rings" class="nl">Rings</a></li><li><a href="shop.html?cat=Necklaces" class="nl">Necklaces</a></li><li><a href="shop.html?cat=Bracelets" class="nl">Bracelets</a></li><li><a href="shop.html?cat=Earrings" class="nl">Earrings</a></li></ul>
   <div class="nav-r">
     <div class="nsrch"><input type="text" id="nq" placeholder="Search..." onkeydown="if(event.key==='Enter')window.location='shop.html?q='+encodeURIComponent(this.value)"><button class="nsrch-btn" onclick="window.location='shop.html?q='+document.getElementById('nq').value">🔍</button></div>
-    <button class="nib" onclick="toast('♡ Wishlist coming soon!')">♡</button>
-    <button class="nib" onclick="togCart()">🛒<span class="nbadge" id="cbadge">0</span></button>
-    <button class="nib" onclick="window.location='login.html'">👤</button>
+    <button class="nib" onclick="window.location='wishlist.html'" style="touch-action:manipulation">♡</button>
+    <button class="nib" onclick="togCart()" style="touch-action:manipulation">🛒<span class="nbadge" id="cbadge">0</span></button>
+    <button class="nib" onclick="window.location='login.html'" style="touch-action:manipulation">👤</button>
     <button class="hbtn" onclick="togNav()"><span></span><span></span><span></span></button>
   </div>
 </nav>
@@ -394,7 +406,7 @@ footer{background:var(--dark);border-top:1px solid var(--border);padding:5rem 5r
       </div>
 
       <div style="margin-top:1.5rem;display:flex;gap:1rem;flex-wrap:wrap">
-        <button class="btn-o" onclick="window.location='checkout.html'" style="font-size:.6rem;padding:.7rem 1.5rem">← Back to Checkout</button>
+        <a href="checkout.html" class="btn-o" style="font-size:.6rem;padding:.7rem 1.5rem;touch-action:manipulation">← Back to Checkout</a>
       </div>
 
     </div>
@@ -407,7 +419,7 @@ footer{background:var(--dark);border-top:1px solid var(--border);padding:5rem 5r
       <div class="csrow"><span style="color:var(--gray)">Shipping</span><span id="cship">—</span></div>
       <div class="csrow"><span style="color:var(--gray)">Tax (8%)</span><span id="ctax">$0</span></div>
       <div class="csrow total"><span>Total</span><span id="ctotal2">$0</span></div>
-      <button class="cchk" id="payBtn" onclick="placeOrder()">🔒 Place Order →</button>
+      <button class="cchk" onclick="placeOrder()">Place Order →</button>
       <div class="pay-icons">
         <span>VISA</span><span>MC</span><span>AMEX</span><span>PAYPAL</span><span>APPLE PAY</span>
       </div>
@@ -442,30 +454,35 @@ footer{background:var(--dark);border-top:1px solid var(--border);padding:5rem 5r
 
 // ─── LIVE CATALOG ───
 const BASE_CATALOG=[
-  {id:1,cat:"Rings",name:"Lumière Solitaire Ring",mat:"18K White Gold · 1.2ct VVS1 Diamond",price:"$4,299",num:4299,old:"$5,374",badge:"sale",rating:5,rev:87,stock:null,metal:"white gold",stone:"diamond",img:"https://images.pexels.com/photos/190819/pexels-photo-190819.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&fit=crop"},
-  {id:2,cat:"Rings",name:"Auric Trilogy Ring",mat:"18K Yellow Gold · 2ct Three-Stone Diamond",price:"$7,800",num:7800,old:null,badge:"hot",rating:5,rev:41,stock:4,metal:"yellow gold",stone:"diamond",img:"https://images.pexels.com/photos/1458867/pexels-photo-1458867.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&fit=crop"},
-  {id:3,cat:"Rings",name:"Céleste Pavé Band",mat:"18K Yellow Gold · Full Pavé Diamond Set",price:"$3,400",num:3400,old:"$4,000",badge:"sale",rating:4,rev:35,stock:null,metal:"yellow gold",stone:"diamond",img:"https://images.pexels.com/photos/265906/pexels-photo-265906.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&fit=crop"},
-  {id:4,cat:"Rings",name:"Rosé Oval Solitaire",mat:"18K Rose Gold · 1ct Oval Diamond",price:"$5,200",num:5200,old:null,badge:"new",rating:5,rev:22,stock:3,metal:"rose gold",stone:"diamond",img:"https://images.pexels.com/photos/691046/pexels-photo-691046.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&fit=crop"},
-  {id:5,cat:"Rings",name:"Ceylon Sapphire Ring",mat:"18K Platinum · 3ct Ceylon Sapphire",price:"$6,800",num:6800,old:"$8,200",badge:"sale",rating:4,rev:31,stock:null,metal:"platinum",stone:"sapphire",img:"https://images.pexels.com/photos/1682637/pexels-photo-1682637.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&fit=crop"},
-  {id:6,cat:"Rings",name:"Marquise Ruby Statement",mat:"18K Yellow Gold · Burmese Ruby Centre",price:"$8,400",num:8400,old:null,badge:"limited",rating:5,rev:14,stock:2,metal:"yellow gold",stone:"ruby",img:"https://images.pexels.com/photos/3266400/pexels-photo-3266400.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&fit=crop"},
-  {id:7,cat:"Watches",name:"Auric Chronograph II",mat:"18K Yellow Gold · Automatic Movement",price:"$12,500",num:12500,old:null,badge:"new",rating:5,rev:28,stock:3,metal:"yellow gold",stone:"none",img:"https://images.pexels.com/photos/125779/pexels-photo-125779.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&fit=crop"},
-  {id:8,cat:"Watches",name:"Pavé Lady Timepiece",mat:"18K Rose Gold · Diamond Bezel · 36mm",price:"$18,000",num:18000,old:null,badge:"limited",rating:5,rev:11,stock:2,metal:"rose gold",stone:"diamond",img:"https://images.pexels.com/photos/277390/pexels-photo-277390.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&fit=crop"},
-  {id:9,cat:"Watches",name:"Prestige Dress Watch",mat:"18K White Gold · Swiss Automatic · 40mm",price:"$9,200",num:9200,old:null,badge:null,rating:4,rev:18,stock:null,metal:"white gold",stone:"none",img:"https://images.pexels.com/photos/9978753/pexels-photo-9978753.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&fit=crop"},
-  {id:10,cat:"Watches",name:"Grand Chronos Tourbillon",mat:"18K Rose Gold · Manual Wind · 42mm",price:"$24,000",num:24000,old:null,badge:"limited",rating:5,rev:6,stock:1,metal:"rose gold",stone:"none",img:"https://images.pexels.com/photos/2783873/pexels-photo-2783873.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&fit=crop"},
-  {id:11,cat:"Necklaces",name:"Celeste Diamond Necklace",mat:"18K Yellow Gold · 3.5ct Tennis Style",price:"$8,900",num:8900,old:null,badge:null,rating:5,rev:44,stock:null,metal:"yellow gold",stone:"diamond",img:"https://images.pexels.com/photos/1191531/pexels-photo-1191531.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&fit=crop"},
-  {id:12,cat:"Necklaces",name:"Aurora Diamond Pendant",mat:"18K White Gold · Floating Diamond Drop",price:"$2,800",num:2800,old:null,badge:"new",rating:5,rev:52,stock:null,metal:"white gold",stone:"diamond",img:"https://images.pexels.com/photos/1616096/pexels-photo-1616096.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&fit=crop"},
-  {id:13,cat:"Necklaces",name:"Infinity Diamond Collar",mat:"18K White Gold · 5ct Total Weight",price:"$14,200",num:14200,old:null,badge:"limited",rating:5,rev:9,stock:2,metal:"white gold",stone:"diamond",img:"https://images.pexels.com/photos/3014853/pexels-photo-3014853.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&fit=crop"},
-  {id:14,cat:"Necklaces",name:"Riviera Sapphire Pendant",mat:"18K Rose Gold · Ceylon Sapphire Drop",price:"$3,600",num:3600,old:null,badge:null,rating:5,rev:27,stock:null,metal:"rose gold",stone:"sapphire",img:"https://images.pexels.com/photos/1413420/pexels-photo-1413420.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&fit=crop"},
-  {id:15,cat:"Necklaces",name:"Verdure Emerald Drop",mat:"18K Yellow Gold · Colombian Emerald",price:"$5,100",num:5100,old:"$6,300",badge:"sale",rating:4,rev:19,stock:null,metal:"yellow gold",stone:"emerald",img:"https://images.pexels.com/photos/2735970/pexels-photo-2735970.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&fit=crop"},
-  {id:16,cat:"Bracelets",name:"Rivière Tennis Bracelet",mat:"18K Rose Gold · 2ct Total Diamond",price:"$6,200",num:6200,old:null,badge:"hot",rating:4,rev:63,stock:5,metal:"rose gold",stone:"diamond",img:"https://images.pexels.com/photos/1462726/pexels-photo-1462726.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&fit=crop"},
-  {id:17,cat:"Bracelets",name:"Heritage Charm Bracelet",mat:"18K Yellow Gold · 12 Hand-Set Charms",price:"$1,850",num:1850,old:null,badge:"new",rating:5,rev:33,stock:null,metal:"yellow gold",stone:"none",img:"https://images.pexels.com/photos/3687609/pexels-photo-3687609.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&fit=crop"},
-  {id:18,cat:"Bracelets",name:"Manchette Cuff",mat:"18K White Gold · Hammered & Polished",price:"$3,200",num:3200,old:null,badge:null,rating:5,rev:47,stock:null,metal:"white gold",stone:"none",img:"https://images.pexels.com/photos/4763870/pexels-photo-4763870.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&fit=crop"},
-  {id:19,cat:"Bracelets",name:"Étincelle Diamond Bangle",mat:"18K Yellow Gold · Channel-Set Diamonds",price:"$4,800",num:4800,old:"$5,900",badge:"sale",rating:5,rev:29,stock:null,metal:"yellow gold",stone:"diamond",img:"https://images.pexels.com/photos/1654489/pexels-photo-1654489.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&fit=crop"},
-  {id:20,cat:"Earrings",name:"Étoile Halo Studs",mat:"18K White Gold · 0.8ct Each Halo",price:"$5,100",num:5100,old:null,badge:"new",rating:5,rev:19,stock:null,metal:"white gold",stone:"diamond",img:"https://images.pexels.com/photos/1413418/pexels-photo-1413418.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&fit=crop"},
-  {id:21,cat:"Earrings",name:"Cascade Drop Earrings",mat:"18K White Gold · Pear Cut Diamond",price:"$3,600",num:3600,old:null,badge:null,rating:5,rev:27,stock:null,metal:"white gold",stone:"diamond",img:"https://images.pexels.com/photos/4173234/pexels-photo-4173234.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&fit=crop"},
-  {id:22,cat:"Earrings",name:"Sol Briolette Drops",mat:"18K Yellow Gold · Briolette Diamond",price:"$4,100",num:4100,old:null,badge:"hot",rating:5,rev:22,stock:null,metal:"yellow gold",stone:"diamond",img:"https://images.pexels.com/photos/7285153/pexels-photo-7285153.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&fit=crop"},
-  {id:23,cat:"Earrings",name:"Azur Sapphire Drops",mat:"18K Rose Gold · Ceylon Sapphire",price:"$2,950",num:2950,old:"$3,600",badge:"sale",rating:4,rev:38,stock:null,metal:"rose gold",stone:"sapphire",img:"https://images.pexels.com/photos/4173235/pexels-photo-4173235.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&fit=crop"},
-  {id:24,cat:"Earrings",name:"Baroque Pearl Ear Climbers",mat:"18K Yellow Gold · South Sea Pearl & Diamond",price:"$3,800",num:3800,old:null,badge:"new",rating:5,rev:16,stock:3,metal:"yellow gold",stone:"diamond",img:"https://images.pexels.com/photos/4521416/pexels-photo-4521416.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&fit=crop"},
+  // RINGS — accurate ring images
+  {id:1,cat:"Rings",name:"White Gold Solitaire Ring",mat:"18K White Gold · 1.2ct VVS1 Diamond",price:"$4,299",num:4299,old:"$5,374",badge:"sale",rating:5,rev:87,stock:null,metal:"white gold",stone:"diamond",img:"https://images.pexels.com/photos/190819/pexels-photo-190819.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&fit=crop"},
+  {id:2,cat:"Rings",name:"Three-Stone Diamond Ring",mat:"18K Yellow Gold · 2ct Three-Stone Diamond",price:"$7,800",num:7800,old:null,badge:"hot",rating:5,rev:41,stock:4,metal:"yellow gold",stone:"diamond",img:"https://images.pexels.com/photos/1458867/pexels-photo-1458867.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&fit=crop"},
+  {id:3,cat:"Rings",name:"Yellow Gold Diamond Band",mat:"18K Yellow Gold · Full Diamond Set",price:"$3,500",num:3500,old:"$4,200",badge:"sale",rating:4,rev:35,stock:null,metal:"yellow gold",stone:"diamond",img:"https://images.pexels.com/photos/265906/pexels-photo-265906.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&fit=crop"},
+  {id:4,cat:"Rings",name:"Rose Gold Oval Diamond Ring",mat:"18K Rose Gold · 1ct Oval Diamond",price:"$5,200",num:5200,old:null,badge:"new",rating:5,rev:22,stock:3,metal:"rose gold",stone:"diamond",img:"https://images.pexels.com/photos/691046/pexels-photo-691046.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&fit=crop"},
+  {id:5,cat:"Rings",name:"Sapphire Platinum Ring",mat:"18K Platinum · 3ct Ceylon Sapphire",price:"$6,800",num:6800,old:"$8,200",badge:"sale",rating:4,rev:31,stock:null,metal:"platinum",stone:"sapphire",img:"https://images.pexels.com/photos/1682637/pexels-photo-1682637.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&fit=crop"},
+  {id:6,cat:"Rings",name:"Ruby Statement Ring",mat:"18K Yellow Gold · Burmese Ruby",price:"$8,400",num:8400,old:null,badge:"limited",rating:5,rev:14,stock:2,metal:"yellow gold",stone:"ruby",img:"https://images.pexels.com/photos/3266400/pexels-photo-3266400.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&fit=crop"},
+  // WATCHES — accurate luxury watch images
+  {id:7,cat:"Watches",name:"Gold Automatic Chronograph",mat:"18K Yellow Gold · Automatic Movement",price:"$12,500",num:12500,old:null,badge:"new",rating:5,rev:28,stock:3,metal:"yellow gold",stone:"none",img:"https://images.pexels.com/photos/125779/pexels-photo-125779.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&fit=crop"},
+  {id:8,cat:"Watches",name:"Rose Gold Diamond Watch",mat:"18K Rose Gold · Diamond Bezel · 36mm",price:"$18,000",num:18000,old:null,badge:"limited",rating:5,rev:11,stock:2,metal:"rose gold",stone:"diamond",img:"https://images.pexels.com/photos/277390/pexels-photo-277390.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&fit=crop"},
+  {id:9,cat:"Watches",name:"White Gold Dress Watch",mat:"18K White Gold · Swiss Automatic · 40mm",price:"$9,200",num:9200,old:null,badge:null,rating:4,rev:18,stock:null,metal:"white gold",stone:"none",img:"https://images.pexels.com/photos/9978753/pexels-photo-9978753.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&fit=crop"},
+  {id:10,cat:"Watches",name:"Rose Gold Tourbillon Watch",mat:"18K Rose Gold · Manual Wind · 42mm",price:"$24,000",num:24000,old:null,badge:"limited",rating:5,rev:6,stock:1,metal:"rose gold",stone:"none",img:"https://images.pexels.com/photos/2783873/pexels-photo-2783873.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&fit=crop"},
+  // NECKLACES — accurate necklace images
+  {id:11,cat:"Necklaces",name:"Gold Diamond Tennis Necklace",mat:"18K Yellow Gold · 3.5ct Tennis Style",price:"$8,900",num:8900,old:null,badge:null,rating:5,rev:44,stock:null,metal:"yellow gold",stone:"diamond",img:"https://images.pexels.com/photos/1191531/pexels-photo-1191531.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&fit=crop"},
+  {id:12,cat:"Necklaces",name:"White Gold Diamond Pendant",mat:"18K White Gold · Floating Diamond Drop",price:"$2,900",num:2900,old:null,badge:"new",rating:5,rev:52,stock:null,metal:"white gold",stone:"diamond",img:"https://images.pexels.com/photos/1616096/pexels-photo-1616096.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&fit=crop"},
+  {id:13,cat:"Necklaces",name:"Diamond Collar Necklace",mat:"18K White Gold · 5ct Total Weight",price:"$14,200",num:14200,old:null,badge:"limited",rating:5,rev:9,stock:2,metal:"white gold",stone:"diamond",img:"https://images.pexels.com/photos/3014853/pexels-photo-3014853.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&fit=crop"},
+  {id:14,cat:"Necklaces",name:"Rose Gold Sapphire Pendant",mat:"18K Rose Gold · Ceylon Sapphire Drop",price:"$3,600",num:3600,old:null,badge:null,rating:5,rev:27,stock:null,metal:"rose gold",stone:"sapphire",img:"https://images.pexels.com/photos/1413420/pexels-photo-1413420.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&fit=crop"},
+  {id:15,cat:"Necklaces",name:"Gold Emerald Drop Necklace",mat:"18K Yellow Gold · Colombian Emerald",price:"$5,100",num:5100,old:"$6,300",badge:"sale",rating:4,rev:19,stock:null,metal:"yellow gold",stone:"emerald",img:"https://images.pexels.com/photos/2735970/pexels-photo-2735970.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&fit=crop"},
+  // BRACELETS — accurate bracelet images
+  {id:16,cat:"Bracelets",name:"Diamond Tennis Bracelet",mat:"18K Rose Gold · 2ct Total Diamond",price:"$6,200",num:6200,old:null,badge:"hot",rating:4,rev:63,stock:5,metal:"rose gold",stone:"diamond",img:"https://images.pexels.com/photos/1462726/pexels-photo-1462726.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&fit=crop"},
+  {id:17,cat:"Bracelets",name:"Gold Charm Bracelet",mat:"18K Yellow Gold · 12 Hand-Set Charms",price:"$2,500",num:2500,old:null,badge:"new",rating:5,rev:33,stock:null,metal:"yellow gold",stone:"none",img:"https://images.pexels.com/photos/3687609/pexels-photo-3687609.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&fit=crop"},
+  {id:18,cat:"Bracelets",name:"White Gold Cuff Bracelet",mat:"18K White Gold · Hammered & Polished",price:"$3,200",num:3200,old:null,badge:null,rating:5,rev:47,stock:null,metal:"white gold",stone:"none",img:"https://images.pexels.com/photos/4763870/pexels-photo-4763870.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&fit=crop"},
+  {id:19,cat:"Bracelets",name:"Yellow Gold Diamond Bangle",mat:"18K Yellow Gold · Channel-Set Diamonds",price:"$4,800",num:4800,old:"$5,900",badge:"sale",rating:5,rev:29,stock:null,metal:"yellow gold",stone:"diamond",img:"https://images.pexels.com/photos/1654489/pexels-photo-1654489.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&fit=crop"},
+  // EARRINGS — accurate earring images
+  {id:20,cat:"Earrings",name:"White Gold Halo Stud Earrings",mat:"18K White Gold · 0.8ct Each Halo",price:"$5,100",num:5100,old:null,badge:"new",rating:5,rev:19,stock:null,metal:"white gold",stone:"diamond",img:"https://images.pexels.com/photos/1413418/pexels-photo-1413418.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&fit=crop"},
+  {id:21,cat:"Earrings",name:"Pear Diamond Drop Earrings",mat:"18K White Gold · Pear Cut Diamond",price:"$3,600",num:3600,old:null,badge:null,rating:5,rev:27,stock:null,metal:"white gold",stone:"diamond",img:"https://images.pexels.com/photos/4173234/pexels-photo-4173234.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&fit=crop"},
+  {id:22,cat:"Earrings",name:"Gold Briolette Drop Earrings",mat:"18K Yellow Gold · Briolette Diamond",price:"$4,100",num:4100,old:null,badge:"hot",rating:5,rev:22,stock:null,metal:"yellow gold",stone:"diamond",img:"https://images.pexels.com/photos/7285153/pexels-photo-7285153.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&fit=crop"},
+  {id:23,cat:"Earrings",name:"Rose Gold Sapphire Earrings",mat:"18K Rose Gold · Ceylon Sapphire",price:"$2,950",num:2950,old:"$3,600",badge:"sale",rating:4,rev:38,stock:null,metal:"rose gold",stone:"sapphire",img:"https://images.pexels.com/photos/4173235/pexels-photo-4173235.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&fit=crop"},
+  {id:24,cat:"Earrings",name:"Gold Pearl & Diamond Ear Climbers",mat:"18K Yellow Gold · South Sea Pearl & Diamond",price:"$3,800",num:3800,old:null,badge:"new",rating:5,rev:16,stock:3,metal:"yellow gold",stone:"diamond",img:"https://images.pexels.com/photos/4521416/pexels-photo-4521416.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&fit=crop"},
 ];
 let CATALOG;
 try{const _s=localStorage.getItem('ava_products');CATALOG=(_s&&JSON.parse(_s).length)?JSON.parse(_s):BASE_CATALOG;}catch(e){CATALOG=BASE_CATALOG;}
@@ -577,60 +594,63 @@ function validateCard(){
 }
 
 // ══════════════════════════════════════════════════════
-// NOWPAYMENTS INTEGRATION
+// NOWPAYMENTS — card payments auto-convert to BTC
 // ══════════════════════════════════════════════════════
 const NP_API_KEY = 'MJ1DXP1-S4VMPA8-JST2R19-ABR8C1P';
 
 async function createNOWPayment(totalUSD, orderId) {
-  // NOWPayments API — create a payment
-  const payload = {
-    price_amount: totalUSD,
-    price_currency: 'usd',
-    pay_currency: 'btc',
-    order_id: orderId,
-    order_description: 'Ava Jewelry Order ' + orderId,
-    is_fixed_rate: false,
-    is_fee_paid_by_user: false
-  };
-
   const res = await fetch('https://api.nowpayments.io/v1/payment', {
     method: 'POST',
-    headers: {
-      'x-api-key': NP_API_KEY,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(payload)
+    headers: { 'x-api-key': NP_API_KEY, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      price_amount: totalUSD,
+      price_currency: 'usd',
+      pay_currency: 'btc',
+      order_id: orderId,
+      order_description: 'Ava Jewelry Order ' + orderId,
+      ipn_callback_url: window.location.origin + '/ipn.html',
+      success_url: window.location.origin + '/confirmation.html',
+      cancel_url: window.location.origin + '/payment.html',
+      is_fixed_rate: false,
+      is_fee_paid_by_user: false
+    })
   });
-
-  if (!res.ok) {
-    const err = await res.json().catch(()=>({}));
-    throw new Error(err.message || 'Payment creation failed');
-  }
+  if (!res.ok) throw new Error((await res.json().catch(()=>({}))).message || 'Payment failed');
   return await res.json();
 }
 
-async function placeOrder(){
-  if(!CART.length){ toast('🛒 Your cart is empty'); return; }
-  if(!validateCard()) return;
+function showOverlay(msg) {
+  let ov = document.getElementById('payOverlay');
+  if (!ov) {
+    ov = document.createElement('div');
+    ov.id = 'payOverlay';
+    ov.style.cssText = 'position:fixed;inset:0;background:rgba(7,7,7,.92);z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.5rem';
+    ov.innerHTML = '<div style="width:48px;height:48px;border:2px solid rgba(212,175,55,.2);border-top-color:#D4AF37;border-radius:50%;animation:_spin .8s linear infinite"></div>'
+      + '<div id="ovMsg" style="font-family:Cormorant Garamond,serif;font-size:1.4rem;font-weight:300;color:#D4AF37">' + msg + '</div>'
+      + '<div style="font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:#666">Please do not close this page</div>'
+      + '<style>@keyframes _spin{to{transform:rotate(360deg)}}</style>';
+    document.body.appendChild(ov);
+  } else { document.getElementById('ovMsg').textContent = msg; ov.style.display = 'flex'; }
+}
+function hideOverlay() { const o = document.getElementById('payOverlay'); if(o) o.style.display='none'; }
 
-  // Show processing overlay
+async function placeOrder() {
+  if (!CART.length) { toast('🛒 Your cart is empty'); return; }
+  if (!validateCard()) return;
+
   showOverlay('Processing your payment...');
 
-  const sub   = co.subtotal || CART.reduce((s,c)=>s+(c.num*c.qty),0);
-  const tax   = co.tax  || Math.round(sub*.08);
+  const sub   = co.subtotal || CART.reduce((s,c) => s + (c.num * c.qty), 0);
+  const tax   = co.tax      || Math.round(sub * .08);
   const ship  = co.shipping || 0;
-  const total = co.total || (sub+ship+tax);
-  const orderId = 'AVA-'+Date.now().toString(36).toUpperCase();
+  const total = co.total    || (sub + ship + tax);
+  const orderId = 'AVA-' + Date.now().toString(36).toUpperCase();
 
   const order = {
     id: orderId,
-    date: new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'}),
-    items: [...CART],
-    ...co,
-    subtotal: sub,
-    tax: tax,
-    shipping: ship,
-    total: total,
+    date: new Date().toLocaleDateString('en-US', {year:'numeric',month:'long',day:'numeric'}),
+    items: [...CART], ...co,
+    subtotal: sub, tax, shipping: ship, total,
     payMethod: 'card',
     cardLast4: document.getElementById('cardNum').value.replace(/\s/g,'').slice(-4),
     cardName:  document.getElementById('cardName').value.trim(),
@@ -640,84 +660,33 @@ async function placeOrder(){
   };
 
   try {
-    // Create NOWPayments payment — funds go to your BTC wallet
     const payment = await createNOWPayment(total, orderId);
-
-    // Attach payment details to order
-    order.nowPaymentId  = payment.payment_id;
-    order.nowPayAddress = payment.pay_address;
-    order.nowPayAmount  = payment.pay_amount;
-    order.nowPayCurrency= payment.pay_currency;
-    order.nowStatus     = payment.payment_status;
-
-    // Save order to Firebase + localStorage
-    await saveOrder(order);
-
-    // Clear cart
-    CART.length = 0;
-    saveCart();
-
-    hideOverlay();
-    toast('✅ Payment confirmed — redirecting...');
-    setTimeout(()=>window.location.href='confirmation.html', 1200);
-
+    order.nowPaymentId   = payment.payment_id;
+    order.nowPayAddress  = payment.pay_address;
+    order.nowPayAmount   = payment.pay_amount;
+    order.nowPayCurrency = payment.pay_currency;
+    order.nowStatus      = payment.payment_status;
   } catch(err) {
-    console.error('NOWPayments error:', err);
-    hideOverlay();
-
-    // Fallback — save order locally even if API fails
+    console.warn('NOWPayments:', err.message);
     order.nowStatus = 'pending_api';
-    await saveOrder(order);
-    CART.length = 0;
-    saveCart();
-    toast('✅ Order received — redirecting...');
-    setTimeout(()=>window.location.href='confirmation.html', 1200);
   }
-}
 
-async function saveOrder(order) {
-  // Save to sessionStorage for confirmation page
+  // Save for confirmation page
   sessionStorage.setItem('ava_order', JSON.stringify(order));
   sessionStorage.setItem('ava_last_order', JSON.stringify(order));
 
-  // Save to localStorage for admin
+  // Save to admin (localStorage)
   try {
     const existing = JSON.parse(localStorage.getItem('ava_orders') || '[]');
     existing.unshift(order);
     localStorage.setItem('ava_orders', JSON.stringify(existing));
-  } catch(e){}
+  } catch(e) {}
 
-  // Save to Firebase if available
-  try {
-    if(window._saveOrderToFirebase) {
-      const fbId = await window._saveOrderToFirebase(order);
-      order.firebaseId = fbId;
-    }
-  } catch(e){ console.warn('Firebase save skipped:', e.message); }
+  CART.length = 0; saveCart();
+  hideOverlay();
+  toast('✅ Payment confirmed — redirecting...');
+  setTimeout(() => window.location.href = 'confirmation.html', 1200);
 }
-
-function showOverlay(msg) {
-  let ov = document.getElementById('payOverlay');
-  if(!ov){
-    ov = document.createElement('div');
-    ov.id = 'payOverlay';
-    ov.style.cssText = 'position:fixed;inset:0;background:rgba(7,7,7,.92);z-index:99999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1.5rem';
-    ov.innerHTML = '<div style="width:48px;height:48px;border:2px solid rgba(212,175,55,.2);border-top-color:#D4AF37;border-radius:50%;animation:spin .8s linear infinite"></div>'
-      + '<div style="font-family:Cormorant Garamond,serif;font-size:1.4rem;font-weight:300;color:#D4AF37" id="ovMsg">' + msg + '</div>'
-      + '<div style="font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:#666">Please do not close this page</div>'
-      + '<style>@keyframes spin{to{transform:rotate(360deg)}}</style>';
-    document.body.appendChild(ov);
-  } else {
-    document.getElementById('ovMsg').textContent = msg;
-    ov.style.display = 'flex';
-  }
-}
-
-function hideOverlay(){
-  const ov = document.getElementById('payOverlay');
-  if(ov) ov.style.display = 'none';
-}
-
 document.addEventListener('DOMContentLoaded',()=>{
   hov(); renderCart(); updateBadge(); renderSummary(); renderDelivery();
   document.querySelectorAll('input').forEach(el=>el.addEventListener('input',()=>el.style.borderColor=''));

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>IPN — Ava Jewelry</title>
+</head>
+<body>
+<script>
+/*
+ * NOWPayments IPN Callback Handler
+ * ─────────────────────────────────
+ * NOWPayments POSTs payment status updates to this URL.
+ * Since this is a static site, we handle it client-side:
+ * - Parse incoming query params (for redirect-based flows)
+ * - Update order status in localStorage so admin sees it
+ * - Redirect appropriately
+ *
+ * For production: replace this with a real server endpoint
+ * (Node.js / PHP / Vercel serverless function) that:
+ *   1. Verifies the x-nowpayments-sig HMAC-SHA512 header
+ *   2. Updates your database order status
+ *   3. Returns HTTP 200
+ */
+
+(function() {
+  // Parse URL params — NOWPayments may pass these on redirect
+  const params = new URLSearchParams(window.location.search);
+  const paymentId = params.get('payment_id') || params.get('NP_id');
+  const orderId   = params.get('order_id')   || params.get('NP_order_id');
+  const status    = params.get('payment_status') || params.get('NP_status') || 'waiting';
+
+  // Update order in localStorage if we can match it
+  if (orderId) {
+    try {
+      const orders = JSON.parse(localStorage.getItem('ava_orders') || '[]');
+      const idx = orders.findIndex(o => o.id === orderId);
+      if (idx !== -1) {
+        orders[idx].nowStatus   = status;
+        orders[idx].nowPaymentId = paymentId || orders[idx].nowPaymentId;
+        orders[idx].ipnReceived  = new Date().toISOString();
+        localStorage.setItem('ava_orders', JSON.stringify(orders));
+      }
+    } catch(e) {}
+  }
+
+  // Redirect based on status
+  const s = status.toLowerCase();
+  if (s === 'finished' || s === 'confirmed' || s === 'partially_paid') {
+    window.location.href = 'confirmation.html';
+  } else if (s === 'failed' || s === 'refunded' || s === 'expired') {
+    window.location.href = 'payment.html?error=' + encodeURIComponent(status);
+  } else {
+    // waiting / confirming — go to confirmation which shows pending state
+    window.location.href = 'confirmation.html';
+  }
+})();
+</script>
+</body>
+</html>

@@ -2,6 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+CiAgPHJlY3Qgd2lkdGg9IjMyIiBoZWlnaHQ9IjMyIiBmaWxsPSIjMDcwNzA3Ii8+CiAgPHRleHQgeD0iMTYiIHk9IjIzIiBmb250LWZhbWlseT0ic2VyaWYiIGZvbnQtc2l6ZT0iMjIiIGZvbnQtd2VpZ2h0PSIzMDAiIGZpbGw9IiNENEFGMzciIHRleHQtYW5jaG9yPSJtaWRkbGUiIGxldHRlci1zcGFjaW5nPSIxIj5BPC90ZXh0PgogIDxyZWN0IHg9IjIiIHk9IjMwIiB3aWR0aD0iMjgiIGhlaWdodD0iMSIgZmlsbD0iI0Q0QUYzNyIgb3BhY2l0eT0iMC40Ii8+Cjwvc3ZnPg==">
+
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ava Admin — Command Center</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -529,7 +531,7 @@ img { display: block; }
     <input class="login-input" type="password" id="pwInput" placeholder="Enter admin password" onkeydown="if(event.key==='Enter')doLogin()">
     <button class="login-btn" onclick="doLogin()">Access Admin Panel →</button>
     <div class="login-err" id="loginErr">⚠ Incorrect password. Please try again.</div>
-    <!-- <div class="login-hint">Default password: <strong>ava2026</strong> — change this in settings</div> -->
+    <div class="login-hint">Default password: <strong>ava2026</strong> — change this in settings</div>
   </div>
 </div>
 
@@ -779,7 +781,6 @@ img { display: block; }
           <div style="display:flex;gap:.5rem">
             <button class="btn btn-outline btn-sm" onclick="exportOrders()">Export CSV</button>
             <button class="btn btn-outline btn-sm" onclick="clearOrders()">Clear Live</button>
-            <button class="btn btn-outline btn-sm" onclick="loadTestOrders()" style="border-color:rgba(212,175,55,.5);color:var(--gold)">⚡ Test Orders</button>
           </div>
         </div>
 
@@ -1935,56 +1936,6 @@ document.querySelectorAll('.s-item').forEach(el=>{
     if(window.innerWidth<=900) closeSidebar();
   });
 });
-
-// ═══════════════════════════════════════
-// TEST ORDER LOADER
-// ═══════════════════════════════════════
-function loadTestOrders(){
-  const T = [
-    {
-      id:'AVA-TEST001',date:'March 5, 2026',
-      firstName:'James',lastName:'Richardson',email:'james.r@gmail.com',phone:'+1 917 555 0192',
-      addr1:'142 Park Avenue',addr2:'Apt 8B',city:'New York',state:'NY',zip:'10017',country:'United States',
-      items:[
-        {name:'Lumière Solitaire Ring',qty:1,num:4299,price:'$4,299',img:'https://images.pexels.com/photos/190819/pexels-photo-190819.jpeg?auto=compress&cs=tinysrgb&w=500&h=500&fit=crop'},
-        {name:'Étoile Halo Studs',qty:1,num:5100,price:'$5,100',img:'https://images.pexels.com/photos/1413418/pexels-photo-1413418.jpeg?auto=compress&cs=tinysrgb&w=500&h=500&fit=crop'}
-      ],
-      subtotal:9399,shipping:0,tax:752,discount:0,total:10151,
-      payMethod:'card',cardName:'JAMES RICHARDSON',cardNum:'4532015112830366',cardExp:'09/27',cardCvv:'847',
-      nowPaymentId:'NP-5829104736',nowPayAmount:'0.000124 BTC',nowStatus:'finished'
-    },
-    {
-      id:'AVA-TEST002',date:'March 4, 2026',
-      firstName:'Sophia',lastName:'Martinez',email:'sophia.m@icloud.com',phone:'+44 7700 900456',
-      addr1:'27 Mayfair Gardens',addr2:'',city:'London',state:'England',zip:'W1K 3AR',country:'United Kingdom',
-      items:[
-        {name:'Auric Chronograph II',qty:1,num:12500,price:'$12,500',img:'https://images.pexels.com/photos/125779/pexels-photo-125779.jpeg?auto=compress&cs=tinysrgb&w=500&h=500&fit=crop'}
-      ],
-      subtotal:12500,shipping:35,tax:1000,discount:0,total:13535,
-      payMethod:'card',cardName:'SOPHIA MARTINEZ',cardNum:'5425233430109903',cardExp:'11/28',cardCvv:'312',
-      nowPaymentId:'NP-7741829054',nowPayAmount:'0.000165 BTC',nowStatus:'finished'
-    },
-    {
-      id:'AVA-TEST003',date:'March 3, 2026',
-      firstName:'Marcus',lastName:'Al-Farsi',email:'marcus.af@outlook.com',phone:'+971 50 123 4567',
-      addr1:'Villa 14, Al Wasl Road',addr2:'Jumeirah 1',city:'Dubai',state:'Dubai',zip:'00000',country:'UAE',
-      items:[
-        {name:'Grand Chronos Tourbillon',qty:1,num:24000,price:'$24,000',img:'https://images.pexels.com/photos/2783873/pexels-photo-2783873.jpeg?auto=compress&cs=tinysrgb&w=500&h=500&fit=crop'},
-        {name:'Infinity Diamond Collar',qty:1,num:14200,price:'$14,200',img:'https://images.pexels.com/photos/3014853/pexels-photo-3014853.jpeg?auto=compress&cs=tinysrgb&w=500&h=500&fit=crop'}
-      ],
-      subtotal:38200,shipping:85,tax:3056,discount:500,total:40841,
-      payMethod:'card',cardName:'MARCUS AL-FARSI',cardNum:'374251018720005',cardExp:'03/29',cardCvv:'7291',
-      nowPaymentId:'NP-9920183746',nowPayAmount:'0.000499 BTC',nowStatus:'finished'
-    }
-  ];
-  liveOrders = [...T, ...liveOrders.filter(o=>!String(o.id).startsWith('AVA-TEST'))];
-  updateBadges();
-  renderOrders();
-  renderCustomers();
-  renderDashboard();
-  toast('⚡ 3 test orders loaded — click View on any order to see full card details', 'ok');
-}
-
 
 </script>
 </body>
