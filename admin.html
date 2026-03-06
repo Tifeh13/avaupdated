@@ -1112,9 +1112,24 @@ function saveImages()   { localStorage.setItem('ava_images', JSON.stringify(imag
 // ══════════════════════════════════════════════
 // LOGIN
 // ══════════════════════════════════════════════
+const PASS = 'ava2026';
+
 async function doLogin() {
   const v = document.getElementById('pwInput').value;
   if (!v) return;
+
+  function grantAccess(token) {
+    if (token) sessionStorage.setItem('ava_admin_token', token);
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('app').classList.add('visible');
+    initApp();
+  }
+  function denyAccess() {
+    document.getElementById('loginErr').classList.add('show');
+    document.getElementById('pwInput').value = '';
+    document.getElementById('pwInput').focus();
+  }
+
   try {
     const res = await fetch('/api/admin-login', {
       method: 'POST',
@@ -1123,19 +1138,17 @@ async function doLogin() {
     });
     const data = await res.json();
     if (data.ok) {
-      sessionStorage.setItem('ava_admin_token', data.token);
-      document.getElementById('loginScreen').style.display = 'none';
-      document.getElementById('app').classList.add('visible');
-      initApp();
+      grantAccess(data.token);
     } else {
-      document.getElementById('loginErr').classList.add('show');
-      document.getElementById('pwInput').value = '';
-      document.getElementById('pwInput').focus();
+      denyAccess();
     }
   } catch(e) {
-    document.getElementById('loginErr').classList.add('show');
-    document.getElementById('pwInput').value = '';
-    document.getElementById('pwInput').focus();
+    // API not available — fall back to local password check
+    if (v === PASS) {
+      grantAccess(null);
+    } else {
+      denyAccess();
+    }
   }
 }
 function doLogout() {
