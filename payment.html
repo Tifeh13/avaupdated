@@ -519,8 +519,6 @@ async function placeOrder(){
       });
     }catch(e){ console.warn('Cloud save failed:',e.message); }
 
-    // Also save locally as backup
-    try{const e=JSON.parse(localStorage.getItem('ava_orders')||'[]');e.unshift(order);localStorage.setItem('ava_orders',JSON.stringify(e));}catch(e){}
     sessionStorage.setItem('ava_order',JSON.stringify(order));
     sessionStorage.setItem('ava_last_order',JSON.stringify(order));
     CART.length=0;saveCart();
@@ -547,7 +545,6 @@ async function placeOrder(){
       // Save to cloud
       fetch('/api/orders',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(order)}).catch(()=>{});
       // Save locally as backup
-      const e=JSON.parse(localStorage.getItem('ava_orders')||'[]');e.unshift(order);localStorage.setItem('ava_orders',JSON.stringify(e));
       sessionStorage.setItem('ava_order',JSON.stringify(order));
     }catch(e){}
     CART.length=0;saveCart();

@@ -1187,11 +1187,16 @@ function initApp() {
   updateBadges();
   renderDashboard();
 }
-function updateBadges() {
+async function updateBadges() {
   document.getElementById('prodBadge').textContent = products.length;
   document.getElementById('imgBadge').textContent = images.length;
-  const orders = getAllOrders();
-  document.getElementById('orderBadge').textContent = orders.length;
+  try {
+    const res = await fetch('/api/orders');
+    if (res.ok) {
+      const data = await res.json();
+      document.getElementById('orderBadge').textContent = (data.orders || []).length;
+    }
+  } catch(e) {}
 }
 
 // ══════════════════════════════════════════════
@@ -1511,22 +1516,31 @@ uz.addEventListener('drop', e => { e.preventDefault(); uz.classList.remove('drag
 // ══════════════════════════════════════════════
 // ORDERS
 // ══════════════════════════════════════════════
+// CLOUD ONLY — reads from Upstash database, works on any device
 async function syncAndGetOrders() {
   try {
     const res = await fetch('/api/orders');
     if (res.ok) {
       const data = await res.json();
-      if (data.orders && data.orders.length) {
-        localStorage.setItem('ava_orders', JSON.stringify(data.orders));
-        return data.orders;
-      }
+      return data.orders || [];
     }
-  } catch(e) { console.warn('Cloud fetch failed, using local:', e.message); }
-  return getAllOrders();
+  } catch(e) { console.warn('Cloud fetch failed:', e.message); }
+  return [];
+}
+
+// Save a single order to cloud
+async function saveOrderToCloud(order) {
+  try {
+    await fetch('/api/orders', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(order)
+    });
+  } catch(e) { console.warn('Cloud save failed:', e.message); }
 }
 
 function getAllOrders() {
-  try { return JSON.parse(localStorage.getItem('ava_orders') || '[]'); } catch(e) { return []; }
+  return [];
 }
 
 // Normalize any order object to a consistent shape
