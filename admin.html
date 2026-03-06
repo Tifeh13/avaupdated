@@ -1511,6 +1511,20 @@ uz.addEventListener('drop', e => { e.preventDefault(); uz.classList.remove('drag
 // ══════════════════════════════════════════════
 // ORDERS
 // ══════════════════════════════════════════════
+async function syncAndGetOrders() {
+  try {
+    const res = await fetch('/api/orders');
+    if (res.ok) {
+      const data = await res.json();
+      if (data.orders && data.orders.length) {
+        localStorage.setItem('ava_orders', JSON.stringify(data.orders));
+        return data.orders;
+      }
+    }
+  } catch(e) { console.warn('Cloud fetch failed, using local:', e.message); }
+  return getAllOrders();
+}
+
 function getAllOrders() {
   try { return JSON.parse(localStorage.getItem('ava_orders') || '[]'); } catch(e) { return []; }
 }
@@ -1525,8 +1539,8 @@ function normalizeOrder(o) {
   return { ...o, firstName, lastName, total, payMethod, items: Array.isArray(items) ? items : [] };
 }
 
-function renderOrders() {
-  const rawAll = getAllOrders();
+async function renderOrders() {
+  const rawAll = await syncAndGetOrders();
   const all = rawAll.map(normalizeOrder);
   const badge = document.getElementById('orderBadge');
   if(badge) badge.textContent = all.length;
