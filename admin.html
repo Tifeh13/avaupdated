@@ -1191,7 +1191,7 @@ async function updateBadges() {
   document.getElementById('prodBadge').textContent = products.length;
   document.getElementById('imgBadge').textContent = images.length;
   try {
-    const res = await fetch('/api/orders');
+    const res = await fetch('/api/orders?t=' + Date.now());
     if (res.ok) {
       const data = await res.json();
       document.getElementById('orderBadge').textContent = (data.orders || []).length;
@@ -1519,7 +1519,7 @@ uz.addEventListener('drop', e => { e.preventDefault(); uz.classList.remove('drag
 // CLOUD ONLY — reads from Upstash database, works on any device
 async function syncAndGetOrders() {
   try {
-    const res = await fetch('/api/orders');
+    const res = await fetch('/api/orders?t=' + Date.now());
     if (res.ok) {
       const data = await res.json();
       return data.orders || [];
