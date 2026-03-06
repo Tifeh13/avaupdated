@@ -1,8 +1,4 @@
 // api/orders.js — AVA Jewelry · Cloud Order Storage
-// Uses Vercel KV (free Redis database built into Vercel)
-// Setup: Vercel Dashboard → Storage → Create KV Database → connect to project
-// Environment variables added automatically: KV_REST_API_URL, KV_REST_API_TOKEN
-
 export const config = { api: { bodyParser: true, maxDuration: 15 } };
 
 const KV_URL   = process.env.KV_REST_API_URL   || 'https://neat-lizard-46999.upstash.io';
@@ -13,7 +9,10 @@ async function kvGet(key) {
     headers: { Authorization: `Bearer ${KV_TOKEN}` }
   });
   const data = await res.json();
-  return data.result ? JSON.parse(data.result) : null;
+  if (!data.result) return [];
+  // result can be a string (needs parsing) or already an object
+  const parsed = typeof data.result === 'string' ? JSON.parse(data.result) : data.result;
+  return Array.isArray(parsed) ? parsed : [];
 }
 
 async function kvSet(key, value) {
@@ -30,16 +29,14 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  // Database is always available
-
-  // GET — admin fetches all orders
+  // GET — fetch all orders for admin
   if (req.method === 'GET') {
     try {
-      const orders = await kvGet('ava_orders') || [];
+      const orders = await kvGet('ava_orders');
       return res.status(200).json({ orders });
     } catch (err) {
       console.error('GET orders error:', err);
-      return res.status(500).json({ error: 'Failed to fetch orders' });
+      return res.status(500).json({ error: 'Failed to fetch orders', orders: [] });
     }
   }
 
@@ -47,14 +44,14 @@ export default async function handler(req, res) {
   if (req.method === 'POST') {
     try {
       const order = req.body;
-      if (!order || !order.id) {
-        return res.status(400).json({ error: 'Invalid order data' });
-      }
-      const existing = await kvGet('ava_orders') || [];
+      if (!order || !order.id) return res.status(400).json({ error: 'Invalid order' });
+
+      const existing = await kvGet('ava_orders'); // always returns array now
       existing.unshift(order);
       if (existing.length > 500) existing.splice(500);
       await kvSet('ava_orders', existing);
-      console.log('ORDER_SAVED:', order.id, order.email, '$' + order.total);
+
+      console.log('ORDER_SAVED:', order.id, '$' + order.total);
       return res.status(200).json({ ok: true, id: order.id });
     } catch (err) {
       console.error('POST order error:', err);
