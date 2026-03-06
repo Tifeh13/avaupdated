@@ -1978,13 +1978,19 @@ function submitTestOrder() {
     items:     testCart.map(p => ({name: p.name, num: p.num, qty: p.qty, price: p.price})),
     subtotal, tax, shipping: 0, total,
   };
-  const orders = getAllOrders();
-  orders.unshift(order);
-  localStorage.setItem('ava_orders', JSON.stringify(orders));
-  closeTestOrder();
-  renderOrders();
-  updateBadges();
-  toast('✅ Order placed — showing as Successful');
+  // Save to cloud
+  fetch('/api/orders', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(order)
+  }).then(() => {
+    closeTestOrder();
+    renderOrders();
+    updateBadges();
+    toast('✅ Test order saved to cloud!');
+  }).catch(err => {
+    toast('❌ Failed to save: ' + err.message);
+  });
 }
 
 // ══════════════════════════════════════════════
