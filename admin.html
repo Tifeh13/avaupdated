@@ -1100,7 +1100,7 @@ const BASE_CATALOG = [
 // ══════════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════════
-
+const PASS = 'ava2026';
 let products = JSON.parse(localStorage.getItem('ava_products') || JSON.stringify(BASE_CATALOG));
 let images   = JSON.parse(localStorage.getItem('ava_images') || '[]');
 let editId   = null;
@@ -1112,43 +1112,16 @@ function saveImages()   { localStorage.setItem('ava_images', JSON.stringify(imag
 // ══════════════════════════════════════════════
 // LOGIN
 // ══════════════════════════════════════════════
-const PASS = 'ava2026';
-
-async function doLogin() {
+function doLogin() {
   const v = document.getElementById('pwInput').value;
-  if (!v) return;
-
-  function grantAccess(token) {
-    if (token) sessionStorage.setItem('ava_admin_token', token);
+  if (v === PASS) {
     document.getElementById('loginScreen').style.display = 'none';
     document.getElementById('app').classList.add('visible');
     initApp();
-  }
-  function denyAccess() {
+  } else {
     document.getElementById('loginErr').classList.add('show');
     document.getElementById('pwInput').value = '';
     document.getElementById('pwInput').focus();
-  }
-
-  try {
-    const res = await fetch('/api/admin-login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ password: v })
-    });
-    const data = await res.json();
-    if (data.ok) {
-      grantAccess(data.token);
-    } else {
-      denyAccess();
-    }
-  } catch(e) {
-    // API not available — fall back to local password check
-    if (v === PASS) {
-      grantAccess(null);
-    } else {
-      denyAccess();
-    }
   }
 }
 function doLogout() {
