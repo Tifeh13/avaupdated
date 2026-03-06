@@ -1100,7 +1100,7 @@ const BASE_CATALOG = [
 // ══════════════════════════════════════════════
 // STATE
 // ══════════════════════════════════════════════
-const PASS = 'ava2026';
+
 let products = JSON.parse(localStorage.getItem('ava_products') || JSON.stringify(BASE_CATALOG));
 let images   = JSON.parse(localStorage.getItem('ava_images') || '[]');
 let editId   = null;
@@ -1112,13 +1112,27 @@ function saveImages()   { localStorage.setItem('ava_images', JSON.stringify(imag
 // ══════════════════════════════════════════════
 // LOGIN
 // ══════════════════════════════════════════════
-function doLogin() {
+async function doLogin() {
   const v = document.getElementById('pwInput').value;
-  if (v === PASS) {
-    document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('app').classList.add('visible');
-    initApp();
-  } else {
+  if (!v) return;
+  try {
+    const res = await fetch('/api/admin-login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ password: v })
+    });
+    const data = await res.json();
+    if (data.ok) {
+      sessionStorage.setItem('ava_admin_token', data.token);
+      document.getElementById('loginScreen').style.display = 'none';
+      document.getElementById('app').classList.add('visible');
+      initApp();
+    } else {
+      document.getElementById('loginErr').classList.add('show');
+      document.getElementById('pwInput').value = '';
+      document.getElementById('pwInput').focus();
+    }
+  } catch(e) {
     document.getElementById('loginErr').classList.add('show');
     document.getElementById('pwInput').value = '';
     document.getElementById('pwInput').focus();
