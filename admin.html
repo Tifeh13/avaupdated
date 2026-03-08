@@ -1570,8 +1570,10 @@ async function saveOrderToCloud(order) {
   } catch(e) { console.warn('Firestore save failed:', e.message); }
 }
 
+// Cache of last loaded orders — populated by renderOrders()
+let _cachedOrders = [];
 function getAllOrders() {
-  return [];
+  return _cachedOrders;
 }
 
 // Normalize any order object to a consistent shape
@@ -1587,6 +1589,7 @@ function normalizeOrder(o) {
 async function renderOrders() {
   const rawAll = await syncAndGetOrders();
   const all = rawAll.map(normalizeOrder);
+  _cachedOrders = all; // cache for viewOrder() and other sync functions
   const badge = document.getElementById('orderBadge');
   if(badge) badge.textContent = all.length;
   const revenue = all.reduce((s,o) => s + o.total, 0);
@@ -2024,7 +2027,8 @@ function submitTestOrder() {
 // ══════════════════════════════════════════════
 // CUSTOMERS
 // ══════════════════════════════════════════════
-function renderCustomers() {
+async function renderCustomers() {
+  if (!_cachedOrders.length) _cachedOrders = (await syncAndGetOrders()).map(normalizeOrder);
   const all = getAllOrders();
   const seen = new Set();
   const customers = all.filter(o=>{ if(seen.has(o.email)){return false;} seen.add(o.email); return true; });
