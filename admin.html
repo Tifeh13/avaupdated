@@ -1066,7 +1066,25 @@ img { display: block; }
 
 <div class="toast-box" id="toastBox"></div>
 
-<script>
+<script type="module">
+// ══════════════════════════════════════════════
+// FIREBASE SETUP
+// ══════════════════════════════════════════════
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, getDocs, addDoc, query, orderBy }
+  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCy9fDJR4Bt31lOa1lQ6sVYjcLCAVx-HTs",
+  authDomain: "avajewelry-28561.firebaseapp.com",
+  projectId: "avajewelry-28561",
+  storageBucket: "avajewelry-28561.firebasestorage.app",
+  messagingSenderId: "715075775873",
+  appId: "1:715075775873:web:4d766238bf8a35228c0c80"
+};
+const _fbApp = initializeApp(firebaseConfig);
+const _db = getFirestore(_fbApp);
+
 // ══════════════════════════════════════════════
 // BASE CATALOG
 // ══════════════════════════════════════════════
@@ -1191,11 +1209,8 @@ async function updateBadges() {
   document.getElementById('prodBadge').textContent = products.length;
   document.getElementById('imgBadge').textContent = images.length;
   try {
-    const res = await fetch('/api/orders?t=' + Date.now());
-    if (res.ok) {
-      const data = await res.json();
-      document.getElementById('orderBadge').textContent = (data.orders || []).length;
-    }
+    const snap = await getDocs(collection(_db, 'orders'));
+    document.getElementById('orderBadge').textContent = snap.size;
   } catch(e) {}
 }
 
@@ -1516,27 +1531,28 @@ uz.addEventListener('drop', e => { e.preventDefault(); uz.classList.remove('drag
 // ══════════════════════════════════════════════
 // ORDERS
 // ══════════════════════════════════════════════
-// CLOUD ONLY — reads from Upstash database, works on any device
+// CLOUD ONLY — reads from Firebase Firestore, works on any device
 async function syncAndGetOrders() {
   try {
-    const res = await fetch('/api/orders?t=' + Date.now());
-    if (res.ok) {
-      const data = await res.json();
-      return data.orders || [];
-    }
-  } catch(e) { console.warn('Cloud fetch failed:', e.message); }
+    const q = query(collection(_db, 'orders'), orderBy('timestamp', 'desc'));
+    const snap = await getDocs(q);
+    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch(e) {
+    console.warn('Firestore fetch failed:', e.message);
+    // fallback: try without orderBy in case index not set
+    try {
+      const snap = await getDocs(collection(_db, 'orders'));
+      return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    } catch(e2) { console.warn('Firestore fallback failed:', e2.message); }
+  }
   return [];
 }
 
-// Save a single order to cloud
+// Save a single order to Firebase Firestore
 async function saveOrderToCloud(order) {
   try {
-    await fetch('/api/orders', {
-      method: 'POST',
-      headers: {'Content-Type':'application/json'},
-      body: JSON.stringify(order)
-    });
-  } catch(e) { console.warn('Cloud save failed:', e.message); }
+    await addDoc(collection(_db, 'orders'), { ...order, timestamp: Date.now() });
+  } catch(e) { console.warn('Firestore save failed:', e.message); }
 }
 
 function getAllOrders() {
@@ -1978,15 +1994,11 @@ function submitTestOrder() {
     items:     testCart.map(p => ({name: p.name, num: p.num, qty: p.qty, price: p.price})),
     subtotal, tax, shipping: 0, total,
   };
-  // Save to cloud then reload orders
-  fetch('/api/orders', {
-    method: 'POST',
-    headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify(order)
-  }).then(async () => {
+  // Save to Firestore then reload orders
+  addDoc(collection(_db, 'orders'), { ...order, timestamp: Date.now() }).then(async () => {
     closeTestOrder();
     toast('✅ Test order saved — loading...');
-    await new Promise(r => setTimeout(r, 800)); // wait for cloud to update
+    await new Promise(r => setTimeout(r, 800));
     await renderOrders();
     await updateBadges();
   }).catch(err => {
