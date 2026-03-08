@@ -1066,7 +1066,6 @@ img { display: block; }
 
 <div class="toast-box" id="toastBox"></div>
 
-<!-- Firebase loaded as module, exposes helpers to window for use in the regular script below -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getFirestore, collection, getDocs, addDoc, query, orderBy }
@@ -1083,26 +1082,23 @@ const firebaseConfig = {
 const _fbApp = initializeApp(firebaseConfig);
 const _db = getFirestore(_fbApp);
 
-// Expose Firestore helpers to window so the regular script below can use them
-window._fbReady = true;
 window._fbGetOrders = async function() {
   try {
-    const q = query(collection(_db, 'orders'), orderBy('timestamp', 'desc'));
+    const q = query(collection(_db, "orders"), orderBy("timestamp", "desc"));
     const snap = await getDocs(q);
     return snap.docs.map(d => ({ _docId: d.id, ...d.data() }));
   } catch(e) {
-    // fallback without orderBy in case index not created yet
     try {
-      const snap = await getDocs(collection(_db, 'orders'));
+      const snap = await getDocs(collection(_db, "orders"));
       return snap.docs.map(d => ({ _docId: d.id, ...d.data() }));
     } catch(e2) { return []; }
   }
 };
 window._fbSaveOrder = async function(order) {
-  await addDoc(collection(_db, 'orders'), { ...order, timestamp: Date.now() });
+  await addDoc(collection(_db, "orders"), { ...order, timestamp: Date.now() });
 };
 window._fbGetOrderCount = async function() {
-  const snap = await getDocs(collection(_db, 'orders'));
+  const snap = await getDocs(collection(_db, "orders"));
   return snap.size;
 };
 </script>
@@ -1230,11 +1226,13 @@ function initApp() {
   renderDashboard();
 }
 async function updateBadges() {
-  document.getElementById('prodBadge').textContent = products.length;
-  document.getElementById('imgBadge').textContent = images.length;
+  document.getElementById("prodBadge").textContent = products.length;
+  document.getElementById("imgBadge").textContent = images.length;
   try {
-    const count = await window._fbGetOrderCount();
-    document.getElementById('orderBadge').textContent = count;
+    if (window._fbGetOrderCount) {
+      const count = await window._fbGetOrderCount();
+      document.getElementById("orderBadge").textContent = count;
+    }
   } catch(e) {}
 }
 
@@ -1555,26 +1553,21 @@ uz.addEventListener('drop', e => { e.preventDefault(); uz.classList.remove('drag
 // ══════════════════════════════════════════════
 // ORDERS
 // ══════════════════════════════════════════════
-// CLOUD ONLY — reads from Firebase Firestore, works on any device
 async function syncAndGetOrders() {
   try {
     if (window._fbGetOrders) return await window._fbGetOrders();
-  } catch(e) { console.warn('Firestore fetch failed:', e.message); }
+  } catch(e) { console.warn("Firestore fetch failed:", e.message); }
   return [];
 }
 
-// Save a single order to Firebase Firestore
 async function saveOrderToCloud(order) {
   try {
-    if (window._fbSaveOrder) await window._fbSaveOrder({ ...order, timestamp: Date.now() });
-  } catch(e) { console.warn('Firestore save failed:', e.message); }
+    if (window._fbSaveOrder) await window._fbSaveOrder(order);
+  } catch(e) { console.warn("Firestore save failed:", e.message); }
 }
 
-// Cache of last loaded orders — populated by renderOrders()
 let _cachedOrders = [];
-function getAllOrders() {
-  return _cachedOrders;
-}
+function getAllOrders() { return _cachedOrders; }
 
 // Normalize any order object to a consistent shape
 function normalizeOrder(o) {
@@ -1589,7 +1582,7 @@ function normalizeOrder(o) {
 async function renderOrders() {
   const rawAll = await syncAndGetOrders();
   const all = rawAll.map(normalizeOrder);
-  _cachedOrders = all; // cache for viewOrder() and other sync functions
+  _cachedOrders = all;
   const badge = document.getElementById('orderBadge');
   if(badge) badge.textContent = all.length;
   const revenue = all.reduce((s,o) => s + o.total, 0);
@@ -1652,7 +1645,7 @@ async function renderOrders() {
               <span style="font-size:.5rem;letter-spacing:.08em;text-transform:uppercase;color:#5daf7a;background:#5daf7a22;padding:.22rem .65rem;border-radius:1px;display:inline-block">Successful</span>
             </td>
             <td style="padding:.9rem .8rem;text-align:right">
-              <button onclick="viewOrder(${i})" style="background:transparent;border:1px solid var(--border);color:var(--gold);padding:.3rem .65rem;font-size:.52rem;letter-spacing:.08em;text-transform:uppercase;transition:all .2s;white-space:nowrap" onmouseenter="this.style.background='var(--gold)';this.style.color='#000'" onmouseleave="this.style.background='transparent';this.style.color='var(--gold)'">View</button>
+              <button onclick="viewOrderDirect(${JSON.stringify(o).replace(/"/g,'&quot;')})" style="background:transparent;border:1px solid var(--border);color:var(--gold);padding:.3rem .65rem;font-size:.52rem;letter-spacing:.08em;text-transform:uppercase;transition:all .2s;white-space:nowrap" onmouseenter="this.style.background='var(--gold)';this.style.color='#000'" onmouseleave="this.style.background='transparent';this.style.color='var(--gold)'">View</button>
             </td>
           </tr>`;
         }).join('')}
@@ -1707,7 +1700,11 @@ function viewOrder(i) {
   if(!o) return;
   showOrderModal(o);
 }
-function viewOrderDirect(o) { showOrderModal(normalizeOrder(o)); }
+function viewOrderDirect(o) {
+  // o may come as a string from onclick HTML attribute
+  if (typeof o === 'string') { try { o = JSON.parse(o); } catch(e) { return; } }
+  showOrderModal(normalizeOrder(o));
+}
 
 function showOrderModal(o) {
   const modal = document.getElementById('orderModal');
@@ -2013,7 +2010,7 @@ function submitTestOrder() {
     subtotal, tax, shipping: 0, total,
   };
   // Save to Firestore then reload orders
-  (window._fbSaveOrder ? window._fbSaveOrder({ ...order, timestamp: Date.now() }) : Promise.resolve()).then(async () => {
+  (window._fbSaveOrder ? window._fbSaveOrder(order) : Promise.resolve()).then(async () => {
     closeTestOrder();
     toast('✅ Test order saved — loading...');
     await new Promise(r => setTimeout(r, 800));
@@ -2027,8 +2024,7 @@ function submitTestOrder() {
 // ══════════════════════════════════════════════
 // CUSTOMERS
 // ══════════════════════════════════════════════
-async function renderCustomers() {
-  if (!_cachedOrders.length) _cachedOrders = (await syncAndGetOrders()).map(normalizeOrder);
+function renderCustomers() {
   const all = getAllOrders();
   const seen = new Set();
   const customers = all.filter(o=>{ if(seen.has(o.email)){return false;} seen.add(o.email); return true; });
@@ -2065,7 +2061,7 @@ async function renderCustomers() {
             <td style="padding:.9rem 1rem;color:var(--faint);white-space:nowrap;font-size:.6rem">${c.date}</td>
             <td style="padding:.9rem 1rem;text-align:right;font-family:var(--serif);color:var(--gold)">$${c.total.toLocaleString()}</td>
             <td style="padding:.9rem .8rem">
-              <button onclick="viewCustomer(${i})" style="background:transparent;border:1px solid var(--border);color:var(--gold);padding:.3rem .65rem;font-size:.52rem;letter-spacing:.08em;text-transform:uppercase;transition:all .2s;white-space:nowrap" onmouseenter="this.style.background='var(--gold)';this.style.color='#000'" onmouseleave="this.style.background='transparent';this.style.color='var(--gold)'">View</button>
+              <button onclick="viewCustomerDirect(${JSON.stringify(c).replace(/"/g,'&quot;')})" style="background:transparent;border:1px solid var(--border);color:var(--gold);padding:.3rem .65rem;font-size:.52rem;letter-spacing:.08em;text-transform:uppercase;transition:all .2s;white-space:nowrap" onmouseenter="this.style.background='var(--gold)';this.style.color='#000'" onmouseleave="this.style.background='transparent';this.style.color='var(--gold)'">View</button>
             </td>
           </tr>`).join('')}
       </tbody>
@@ -2107,7 +2103,10 @@ function viewCustomer(i) {
   const customers = all.filter(o=>{ if(seen.has(o.email)){return false;} seen.add(o.email); return true; });
   showCustomerModal(customers[i]);
 }
-function viewCustomerDirect(c) { showCustomerModal(c); }
+function viewCustomerDirect(c) {
+  if (typeof c === 'string') { try { c = JSON.parse(c); } catch(e) { return; } }
+  showCustomerModal(c);
+}
 
 function showCustomerModal(c) {
   const modal = document.getElementById('custModal');
