@@ -2323,6 +2323,36 @@ document.addEventListener('DOMContentLoaded', () => {
   startLivePolling();
 });
 
+// ══════════════════════════════════════════════
+// EXPOSE FUNCTIONS TO GLOBAL SCOPE
+// (required because this is a type="module" script —
+//  inline onclick= attributes can't see module-scoped functions)
+// ══════════════════════════════════════════════
+Object.assign(window, {
+  doLogin, doLogout,
+  gotoPanel,
+  // Products
+  filterProds, renderProdCards, loadProductIntoForm, resetProductForm,
+  deleteCurrentProduct, deleteProduct, saveProduct, exportCSV,
+  previewImg, inlineUpload, closeModal,
+  // Images
+  handleFiles, useImage, deleteImage, clearAllImages,
+  // Orders
+  renderOrders, filterOrders, viewOrder, viewOrderDirect,
+  closeOrderModal, exportOrders, clearOrders,
+  openManualOrder, closeManualOrder, toggleManualProd, submitManualOrder,
+  openTestOrder, closeTestOrder, toggleTestProd, selectTestPay,
+  submitTestOrder, fmtCard, fmtExp, updateTestCartSummary,
+  checkNowPayments,
+  // Customers
+  renderCustomers, filterCustomers, viewCustomer, viewCustomerDirect,
+  closeCustModal,
+  // Analytics
+  renderAnalytics,
+  // Sidebar
+  toggleSidebar, closeSidebar,
+});
+
 </script>
 </body>
 </html>
