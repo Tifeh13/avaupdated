@@ -1978,16 +1978,17 @@ function submitTestOrder() {
     items:     testCart.map(p => ({name: p.name, num: p.num, qty: p.qty, price: p.price})),
     subtotal, tax, shipping: 0, total,
   };
-  // Save to cloud
+  // Save to cloud then reload orders
   fetch('/api/orders', {
     method: 'POST',
     headers: {'Content-Type': 'application/json'},
     body: JSON.stringify(order)
-  }).then(() => {
+  }).then(async () => {
     closeTestOrder();
-    renderOrders();
-    updateBadges();
-    toast('✅ Test order saved to cloud!');
+    toast('✅ Test order saved — loading...');
+    await new Promise(r => setTimeout(r, 800)); // wait for cloud to update
+    await renderOrders();
+    await updateBadges();
   }).catch(err => {
     toast('❌ Failed to save: ' + err.message);
   });
