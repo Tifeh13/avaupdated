@@ -1066,10 +1066,8 @@ img { display: block; }
 
 <div class="toast-box" id="toastBox"></div>
 
+<!-- Firebase loaded as module, exposes helpers to window for use in the regular script below -->
 <script type="module">
-// ══════════════════════════════════════════════
-// FIREBASE SETUP
-// ══════════════════════════════════════════════
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getFirestore, collection, getDocs, addDoc, query, orderBy }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
@@ -1084,6 +1082,32 @@ const firebaseConfig = {
 };
 const _fbApp = initializeApp(firebaseConfig);
 const _db = getFirestore(_fbApp);
+
+// Expose Firestore helpers to window so the regular script below can use them
+window._fbReady = true;
+window._fbGetOrders = async function() {
+  try {
+    const q = query(collection(_db, 'orders'), orderBy('timestamp', 'desc'));
+    const snap = await getDocs(q);
+    return snap.docs.map(d => ({ _docId: d.id, ...d.data() }));
+  } catch(e) {
+    // fallback without orderBy in case index not created yet
+    try {
+      const snap = await getDocs(collection(_db, 'orders'));
+      return snap.docs.map(d => ({ _docId: d.id, ...d.data() }));
+    } catch(e2) { return []; }
+  }
+};
+window._fbSaveOrder = async function(order) {
+  await addDoc(collection(_db, 'orders'), { ...order, timestamp: Date.now() });
+};
+window._fbGetOrderCount = async function() {
+  const snap = await getDocs(collection(_db, 'orders'));
+  return snap.size;
+};
+</script>
+
+<script>
 
 // ══════════════════════════════════════════════
 // BASE CATALOG
@@ -1209,8 +1233,8 @@ async function updateBadges() {
   document.getElementById('prodBadge').textContent = products.length;
   document.getElementById('imgBadge').textContent = images.length;
   try {
-    const snap = await getDocs(collection(_db, 'orders'));
-    document.getElementById('orderBadge').textContent = snap.size;
+    const count = await window._fbGetOrderCount();
+    document.getElementById('orderBadge').textContent = count;
   } catch(e) {}
 }
 
@@ -1534,24 +1558,15 @@ uz.addEventListener('drop', e => { e.preventDefault(); uz.classList.remove('drag
 // CLOUD ONLY — reads from Firebase Firestore, works on any device
 async function syncAndGetOrders() {
   try {
-    const q = query(collection(_db, 'orders'), orderBy('timestamp', 'desc'));
-    const snap = await getDocs(q);
-    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
-  } catch(e) {
-    console.warn('Firestore fetch failed:', e.message);
-    // fallback: try without orderBy in case index not set
-    try {
-      const snap = await getDocs(collection(_db, 'orders'));
-      return snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    } catch(e2) { console.warn('Firestore fallback failed:', e2.message); }
-  }
+    if (window._fbGetOrders) return await window._fbGetOrders();
+  } catch(e) { console.warn('Firestore fetch failed:', e.message); }
   return [];
 }
 
 // Save a single order to Firebase Firestore
 async function saveOrderToCloud(order) {
   try {
-    await addDoc(collection(_db, 'orders'), { ...order, timestamp: Date.now() });
+    if (window._fbSaveOrder) await window._fbSaveOrder({ ...order, timestamp: Date.now() });
   } catch(e) { console.warn('Firestore save failed:', e.message); }
 }
 
@@ -1995,7 +2010,7 @@ function submitTestOrder() {
     subtotal, tax, shipping: 0, total,
   };
   // Save to Firestore then reload orders
-  addDoc(collection(_db, 'orders'), { ...order, timestamp: Date.now() }).then(async () => {
+  (window._fbSaveOrder ? window._fbSaveOrder({ ...order, timestamp: Date.now() }) : Promise.resolve()).then(async () => {
     closeTestOrder();
     toast('✅ Test order saved — loading...');
     await new Promise(r => setTimeout(r, 800));
@@ -2321,36 +2336,6 @@ async function checkNowPayments() {
 // Start polling when app loads
 document.addEventListener('DOMContentLoaded', () => {
   startLivePolling();
-});
-
-// ══════════════════════════════════════════════
-// EXPOSE FUNCTIONS TO GLOBAL SCOPE
-// (required because this is a type="module" script —
-//  inline onclick= attributes can't see module-scoped functions)
-// ══════════════════════════════════════════════
-Object.assign(window, {
-  doLogin, doLogout,
-  gotoPanel,
-  // Products
-  filterProds, renderProdCards, loadProductIntoForm, resetProductForm,
-  deleteCurrentProduct, deleteProduct, saveProduct, exportCSV,
-  previewImg, inlineUpload, closeModal,
-  // Images
-  handleFiles, useImage, deleteImage, clearAllImages,
-  // Orders
-  renderOrders, filterOrders, viewOrder, viewOrderDirect,
-  closeOrderModal, exportOrders, clearOrders,
-  openManualOrder, closeManualOrder, toggleManualProd, submitManualOrder,
-  openTestOrder, closeTestOrder, toggleTestProd, selectTestPay,
-  submitTestOrder, fmtCard, fmtExp, updateTestCartSummary,
-  checkNowPayments,
-  // Customers
-  renderCustomers, filterCustomers, viewCustomer, viewCustomerDirect,
-  closeCustModal,
-  // Analytics
-  renderAnalytics,
-  // Sidebar
-  toggleSidebar, closeSidebar,
 });
 
 </script>
