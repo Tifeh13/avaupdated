@@ -1555,8 +1555,9 @@ async function saveOrderToCloud(order) {
   } catch(e) { console.warn('Firestore save failed:', e.message); }
 }
 
+let _ordersCache = [];
 function getAllOrders() {
-  return [];
+  return _ordersCache;
 }
 
 // Normalize any order object to a consistent shape
@@ -1571,6 +1572,7 @@ function normalizeOrder(o) {
 
 async function renderOrders() {
   const rawAll = await syncAndGetOrders();
+  _ordersCache = rawAll;
   const all = rawAll.map(normalizeOrder);
   const badge = document.getElementById('orderBadge');
   if(badge) badge.textContent = all.length;
