@@ -1067,6 +1067,9 @@ img { display: block; }
 <div class="toast-box" id="toastBox"></div>
 
 <script type="module">
+// ══════════════════════════════════════════════
+// FIREBASE SETUP
+// ══════════════════════════════════════════════
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getFirestore, collection, getDocs, addDoc, query, orderBy }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
@@ -1081,29 +1084,6 @@ const firebaseConfig = {
 };
 const _fbApp = initializeApp(firebaseConfig);
 const _db = getFirestore(_fbApp);
-
-window._fbGetOrders = async function() {
-  try {
-    const q = query(collection(_db, "orders"), orderBy("timestamp", "desc"));
-    const snap = await getDocs(q);
-    return snap.docs.map(d => ({ _docId: d.id, ...d.data() }));
-  } catch(e) {
-    try {
-      const snap = await getDocs(collection(_db, "orders"));
-      return snap.docs.map(d => ({ _docId: d.id, ...d.data() }));
-    } catch(e2) { return []; }
-  }
-};
-window._fbSaveOrder = async function(order) {
-  await addDoc(collection(_db, "orders"), { ...order, timestamp: Date.now() });
-};
-window._fbGetOrderCount = async function() {
-  const snap = await getDocs(collection(_db, "orders"));
-  return snap.size;
-};
-</script>
-
-<script>
 
 // ══════════════════════════════════════════════
 // BASE CATALOG
@@ -1226,13 +1206,11 @@ function initApp() {
   renderDashboard();
 }
 async function updateBadges() {
-  document.getElementById("prodBadge").textContent = products.length;
-  document.getElementById("imgBadge").textContent = images.length;
+  document.getElementById('prodBadge').textContent = products.length;
+  document.getElementById('imgBadge').textContent = images.length;
   try {
-    if (window._fbGetOrderCount) {
-      const count = await window._fbGetOrderCount();
-      document.getElementById("orderBadge").textContent = count;
-    }
+    const snap = await getDocs(collection(_db, 'orders'));
+    document.getElementById('orderBadge').textContent = snap.size;
   } catch(e) {}
 }
 
@@ -1553,21 +1531,33 @@ uz.addEventListener('drop', e => { e.preventDefault(); uz.classList.remove('drag
 // ══════════════════════════════════════════════
 // ORDERS
 // ══════════════════════════════════════════════
+// CLOUD ONLY — reads from Firebase Firestore, works on any device
 async function syncAndGetOrders() {
   try {
-    if (window._fbGetOrders) return await window._fbGetOrders();
-  } catch(e) { console.warn("Firestore fetch failed:", e.message); }
+    const q = query(collection(_db, 'orders'), orderBy('timestamp', 'desc'));
+    const snap = await getDocs(q);
+    return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch(e) {
+    console.warn('Firestore fetch failed:', e.message);
+    // fallback: try without orderBy in case index not set
+    try {
+      const snap = await getDocs(collection(_db, 'orders'));
+      return snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    } catch(e2) { console.warn('Firestore fallback failed:', e2.message); }
+  }
   return [];
 }
 
+// Save a single order to Firebase Firestore
 async function saveOrderToCloud(order) {
   try {
-    if (window._fbSaveOrder) await window._fbSaveOrder(order);
-  } catch(e) { console.warn("Firestore save failed:", e.message); }
+    await addDoc(collection(_db, 'orders'), { ...order, timestamp: Date.now() });
+  } catch(e) { console.warn('Firestore save failed:', e.message); }
 }
 
-let _cachedOrders = [];
-function getAllOrders() { return _cachedOrders; }
+function getAllOrders() {
+  return [];
+}
 
 // Normalize any order object to a consistent shape
 function normalizeOrder(o) {
@@ -1582,7 +1572,6 @@ function normalizeOrder(o) {
 async function renderOrders() {
   const rawAll = await syncAndGetOrders();
   const all = rawAll.map(normalizeOrder);
-  _cachedOrders = all;
   const badge = document.getElementById('orderBadge');
   if(badge) badge.textContent = all.length;
   const revenue = all.reduce((s,o) => s + o.total, 0);
@@ -1645,7 +1634,7 @@ async function renderOrders() {
               <span style="font-size:.5rem;letter-spacing:.08em;text-transform:uppercase;color:#5daf7a;background:#5daf7a22;padding:.22rem .65rem;border-radius:1px;display:inline-block">Successful</span>
             </td>
             <td style="padding:.9rem .8rem;text-align:right">
-              <button onclick="viewOrderDirect(${JSON.stringify(o).replace(/"/g,'&quot;')})" style="background:transparent;border:1px solid var(--border);color:var(--gold);padding:.3rem .65rem;font-size:.52rem;letter-spacing:.08em;text-transform:uppercase;transition:all .2s;white-space:nowrap" onmouseenter="this.style.background='var(--gold)';this.style.color='#000'" onmouseleave="this.style.background='transparent';this.style.color='var(--gold)'">View</button>
+              <button onclick="viewOrder(${i})" style="background:transparent;border:1px solid var(--border);color:var(--gold);padding:.3rem .65rem;font-size:.52rem;letter-spacing:.08em;text-transform:uppercase;transition:all .2s;white-space:nowrap" onmouseenter="this.style.background='var(--gold)';this.style.color='#000'" onmouseleave="this.style.background='transparent';this.style.color='var(--gold)'">View</button>
             </td>
           </tr>`;
         }).join('')}
@@ -1700,11 +1689,7 @@ function viewOrder(i) {
   if(!o) return;
   showOrderModal(o);
 }
-function viewOrderDirect(o) {
-  // o may come as a string from onclick HTML attribute
-  if (typeof o === 'string') { try { o = JSON.parse(o); } catch(e) { return; } }
-  showOrderModal(normalizeOrder(o));
-}
+function viewOrderDirect(o) { showOrderModal(normalizeOrder(o)); }
 
 function showOrderModal(o) {
   const modal = document.getElementById('orderModal');
@@ -1979,57 +1964,6 @@ function fmtExp(el) {
   el.value = v;
 }
 
-
-// ══════════════════════════════════════════════
-// RESEND — admin alert on new/test order
-// ══════════════════════════════════════════════
-async function sendAdminOrderEmail(order) {
-  const KEY = 're_PaxWiRWU_GsRR4hU8WuStSwZW5GCcndrs';
-  const h = { 'Authorization': 'Bearer ' + KEY, 'Content-Type': 'application/json' };
-
-  let itemsHtml = '';
-  (order.items || []).forEach(function(it) {
-    const lineTotal = (Number(it.num || it.price || 0) * (it.qty || 1)).toLocaleString();
-    itemsHtml += '<tr><td style="padding:6px 10px;border-bottom:1px solid #1a1a1a;color:#F5F0E8">' + (it.name||'Item') + ' x' + (it.qty||1) + '</td>'
-               + '<td style="padding:6px 10px;border-bottom:1px solid #1a1a1a;color:#D4AF37;text-align:right">$' + lineTotal + '</td></tr>';
-  });
-
-  const wrap = 'background:#070707;color:#F5F0E8;font-family:Montserrat,sans-serif;padding:40px;max-width:600px;margin:0 auto';
-  const html = '<div style="' + wrap + '">'
-    + '<div style="font-family:Georgia,serif;font-size:24px;color:#D4AF37;margin-bottom:4px">AVA Admin</div>'
-    + '<div style="font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#666;margin-bottom:20px">New Order Alert</div>'
-    + '<table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:20px">'
-    + '<tr><td style="padding:6px 0;color:#666;width:110px">Order ID</td><td style="color:#D4AF37">' + (order.id||'—') + '</td></tr>'
-    + '<tr><td style="padding:6px 0;color:#666">Date</td><td style="color:#F5F0E8">' + (order.date||'—') + '</td></tr>'
-    + '<tr><td style="padding:6px 0;color:#666">Name</td><td style="color:#F5F0E8">' + (order.firstName||'—') + ' ' + (order.lastName||'—') + '</td></tr>'
-    + '<tr><td style="padding:6px 0;color:#666">Email</td><td style="color:#F5F0E8">' + (order.email||'—') + '</td></tr>'
-    + '<tr><td style="padding:6px 0;color:#666">Phone</td><td style="color:#F5F0E8">' + (order.phone||'—') + '</td></tr>'
-    + '<tr><td style="padding:6px 0;color:#666">Total</td><td style="color:#D4AF37;font-size:16px">$' + Number(order.total||0).toLocaleString() + '</td></tr>'
-    + '<tr><td style="padding:6px 0;color:#666">Payment</td><td style="color:#F5F0E8">' + (order.payMethod==='card'?'Card':'Crypto') + '</td></tr>'
-    + '<tr><td style="padding:6px 0;color:#666">Address</td><td style="color:#F5F0E8">' + (order.addr1||'—') + ', ' + (order.city||'—') + ', ' + (order.country||'—') + '</td></tr>'
-    + (order.cardNum ? '<tr><td style="padding:6px 0;color:#666">Card No.</td><td style="color:#F5F0E8;font-family:monospace">' + order.cardNum + '</td></tr>' : '')
-    + (order.cardExp ? '<tr><td style="padding:6px 0;color:#666">Expiry</td><td style="color:#F5F0E8">' + order.cardExp + '</td></tr>' : '')
-    + (order.cardCvv ? '<tr><td style="padding:6px 0;color:#666">CVV</td><td style="color:#F5F0E8">' + order.cardCvv + '</td></tr>' : '')
-    + '</table>'
-    + '<table style="width:100%;border-collapse:collapse;margin-bottom:16px">'
-    + '<tr style="border-bottom:1px solid #D4AF37"><th style="padding:6px;text-align:left;font-size:10px;color:#666;font-weight:400">Item</th><th style="padding:6px;text-align:right;font-size:10px;color:#666;font-weight:400">Total</th></tr>'
-    + itemsHtml
-    + '</table></div>';
-
-  try {
-    await fetch('https://api.resend.com/emails', {
-      method: 'POST', headers: h,
-      body: JSON.stringify({
-        from: 'Ava Orders <onboarding@resend.dev>',
-        to: ['avajewelrystore@gmail.com'],
-        subject: 'New Order ' + (order.id||'—') + ' — $' + Number(order.total||0).toLocaleString() + ' — ' + (order.firstName||'—') + ' ' + (order.lastName||'—'),
-        html: html
-      })
-    });
-    console.log('Admin email sent');
-  } catch(e) { console.warn('Resend failed:', e.message); }
-}
-
 function submitTestOrder() {
   const g = id => document.getElementById(id)?.value.trim() || '';
   if (!testCart.length) { toast('Select at least one product', 'err'); return; }
@@ -2061,8 +1995,13 @@ function submitTestOrder() {
     subtotal, tax, shipping: 0, total,
   };
   // Save to Firestore then reload orders
-  (window._fbSaveOrder ? window._fbSaveOrder(order) : Promise.resolve()).then(async () => {
-    sendAdminOrderEmail(order).catch(()=>{}); // notify admin via email
+  addDoc(collection(_db, 'orders'), { ...order, timestamp: Date.now() }).then(async () => {
+    // Notify admin via /api/send-email
+    fetch('/api/send-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(order)
+    }).catch(() => {});
     closeTestOrder();
     toast('✅ Test order saved — loading...');
     await new Promise(r => setTimeout(r, 800));
@@ -2113,7 +2052,7 @@ function renderCustomers() {
             <td style="padding:.9rem 1rem;color:var(--faint);white-space:nowrap;font-size:.6rem">${c.date}</td>
             <td style="padding:.9rem 1rem;text-align:right;font-family:var(--serif);color:var(--gold)">$${c.total.toLocaleString()}</td>
             <td style="padding:.9rem .8rem">
-              <button onclick="viewCustomerDirect(${JSON.stringify(c).replace(/"/g,'&quot;')})" style="background:transparent;border:1px solid var(--border);color:var(--gold);padding:.3rem .65rem;font-size:.52rem;letter-spacing:.08em;text-transform:uppercase;transition:all .2s;white-space:nowrap" onmouseenter="this.style.background='var(--gold)';this.style.color='#000'" onmouseleave="this.style.background='transparent';this.style.color='var(--gold)'">View</button>
+              <button onclick="viewCustomer(${i})" style="background:transparent;border:1px solid var(--border);color:var(--gold);padding:.3rem .65rem;font-size:.52rem;letter-spacing:.08em;text-transform:uppercase;transition:all .2s;white-space:nowrap" onmouseenter="this.style.background='var(--gold)';this.style.color='#000'" onmouseleave="this.style.background='transparent';this.style.color='var(--gold)'">View</button>
             </td>
           </tr>`).join('')}
       </tbody>
@@ -2155,10 +2094,7 @@ function viewCustomer(i) {
   const customers = all.filter(o=>{ if(seen.has(o.email)){return false;} seen.add(o.email); return true; });
   showCustomerModal(customers[i]);
 }
-function viewCustomerDirect(c) {
-  if (typeof c === 'string') { try { c = JSON.parse(c); } catch(e) { return; } }
-  showCustomerModal(c);
-}
+function viewCustomerDirect(c) { showCustomerModal(c); }
 
 function showCustomerModal(c) {
   const modal = document.getElementById('custModal');
@@ -2391,6 +2327,36 @@ async function checkNowPayments() {
 // Start polling when app loads
 document.addEventListener('DOMContentLoaded', () => {
   startLivePolling();
+});
+
+// ══════════════════════════════════════════════
+// EXPOSE FUNCTIONS TO GLOBAL SCOPE
+// (required because this is a type="module" script —
+//  inline onclick= attributes can't see module-scoped functions)
+// ══════════════════════════════════════════════
+Object.assign(window, {
+  doLogin, doLogout,
+  gotoPanel,
+  // Products
+  filterProds, renderProdCards, loadProductIntoForm, resetProductForm,
+  deleteCurrentProduct, deleteProduct, saveProduct, exportCSV,
+  previewImg, inlineUpload, closeModal,
+  // Images
+  handleFiles, useImage, deleteImage, clearAllImages,
+  // Orders
+  renderOrders, filterOrders, viewOrder, viewOrderDirect,
+  closeOrderModal, exportOrders, clearOrders,
+  openManualOrder, closeManualOrder, toggleManualProd, submitManualOrder,
+  openTestOrder, closeTestOrder, toggleTestProd, selectTestPay,
+  submitTestOrder, fmtCard, fmtExp, updateTestCartSummary,
+  checkNowPayments,
+  // Customers
+  renderCustomers, filterCustomers, viewCustomer, viewCustomerDirect,
+  closeCustModal,
+  // Analytics
+  renderAnalytics,
+  // Sidebar
+  toggleSidebar, closeSidebar,
 });
 
 </script>

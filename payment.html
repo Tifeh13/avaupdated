@@ -660,92 +660,6 @@ function showOverlay(msg) {
 }
 function hideOverlay() { const o = document.getElementById('payOverlay'); if(o) o.style.display='none'; }
 
-// ══════════════════════════════════════════════
-// RESEND — customer confirmation + admin alert
-// ══════════════════════════════════════════════
-async function sendOrderEmails(order) {
-  const KEY = 're_PaxWiRWU_GsRR4hU8WuStSwZW5GCcndrs';
-  const h = { 'Authorization': 'Bearer ' + KEY, 'Content-Type': 'application/json' };
-
-  // Build items list for email
-  let itemsHtml = '';
-  (order.items || []).forEach(function(it) {
-    const lineTotal = (Number(it.num || it.price || 0) * (it.qty || 1)).toLocaleString();
-    itemsHtml += '<tr><td style="padding:8px;border-bottom:1px solid #222;color:#F5F0E8">' + (it.name||'Item') + ' x' + (it.qty||1) + '</td>'
-               + '<td style="padding:8px;border-bottom:1px solid #222;color:#D4AF37;text-align:right">$' + lineTotal + '</td></tr>';
-  });
-
-  const wrap = 'background:#070707;color:#F5F0E8;font-family:Montserrat,sans-serif;padding:40px;max-width:600px;margin:0 auto';
-
-  // Customer confirmation email
-  const custHtml = '<div style="' + wrap + '">'
-    + '<div style="font-family:Georgia,serif;font-size:28px;color:#D4AF37;letter-spacing:6px">AVA</div>'
-    + '<div style="font-size:10px;letter-spacing:4px;text-transform:uppercase;color:#666;margin-bottom:28px">Jewelry &middot; Order Confirmation</div>'
-    + '<h2 style="font-family:Georgia,serif;font-size:20px;font-weight:300;color:#F5F0E8;margin-bottom:8px">Thank you, ' + order.firstName + '!</h2>'
-    + '<p style="font-size:13px;color:#888;margin-bottom:20px">Your order <strong style="color:#D4AF37">' + order.id + '</strong> is confirmed and being processed.</p>'
-    + '<table style="width:100%;border-collapse:collapse;margin-bottom:20px">'
-    + '<tr style="border-bottom:1px solid #D4AF37"><th style="padding:8px;text-align:left;font-size:10px;letter-spacing:2px;color:#666;font-weight:400">Item</th><th style="padding:8px;text-align:right;font-size:10px;letter-spacing:2px;color:#666;font-weight:400">Price</th></tr>'
-    + itemsHtml
-    + '</table>'
-    + '<div style="border-top:1px solid #D4AF37;padding-top:14px;margin-bottom:24px">'
-    + '<div style="display:flex;justify-content:space-between;font-size:12px;color:#666;margin-bottom:5px"><span>Subtotal</span><span>$' + Number(order.subtotal||0).toLocaleString() + '</span></div>'
-    + '<div style="display:flex;justify-content:space-between;font-size:12px;color:#666;margin-bottom:5px"><span>Tax</span><span>$' + Number(order.tax||0).toLocaleString() + '</span></div>'
-    + '<div style="display:flex;justify-content:space-between;font-family:Georgia,serif;font-size:18px;color:#D4AF37;padding-top:10px;border-top:1px solid #222"><span>Total</span><span>$' + Number(order.total||0).toLocaleString() + '</span></div>'
-    + '</div>'
-    + '<div style="background:#0f0f0f;border:1px solid #1a1a1a;padding:14px;margin-bottom:20px">'
-    + '<div style="font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#666;margin-bottom:8px">Ship To</div>'
-    + '<div style="font-size:13px;color:#F5F0E8;line-height:1.9">' + (order.addr1||'—') + (order.addr2?', '+order.addr2:'') + '<br>' + (order.city||'—') + (order.state?', '+order.state:'') + ' ' + (order.zip||'') + '<br>' + (order.country||'—') + '</div>'
-    + '</div>'
-    + '<p style="font-size:11px;color:#555">&copy; 2026 Ava Jewelry. Reply to this email with any questions.</p>'
-    + '</div>';
-
-  // Admin notification email
-  const adminHtml = '<div style="' + wrap + '">'
-    + '<div style="font-family:Georgia,serif;font-size:24px;color:#D4AF37;margin-bottom:4px">AVA Admin</div>'
-    + '<div style="font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#666;margin-bottom:20px">New Order</div>'
-    + '<table style="width:100%;border-collapse:collapse;font-size:13px;margin-bottom:20px">'
-    + '<tr><td style="padding:6px 0;color:#666;width:110px">Order ID</td><td style="color:#D4AF37">' + order.id + '</td></tr>'
-    + '<tr><td style="padding:6px 0;color:#666">Date</td><td style="color:#F5F0E8">' + (order.date||'—') + '</td></tr>'
-    + '<tr><td style="padding:6px 0;color:#666">Name</td><td style="color:#F5F0E8">' + order.firstName + ' ' + order.lastName + '</td></tr>'
-    + '<tr><td style="padding:6px 0;color:#666">Email</td><td style="color:#F5F0E8">' + (order.email||'—') + '</td></tr>'
-    + '<tr><td style="padding:6px 0;color:#666">Phone</td><td style="color:#F5F0E8">' + (order.phone||'—') + '</td></tr>'
-    + '<tr><td style="padding:6px 0;color:#666">Total</td><td style="color:#D4AF37;font-size:16px">$' + Number(order.total||0).toLocaleString() + '</td></tr>'
-    + '<tr><td style="padding:6px 0;color:#666">Payment</td><td style="color:#F5F0E8">' + (order.payMethod==='card'?'Card':'Crypto') + '</td></tr>'
-    + '<tr><td style="padding:6px 0;color:#666">Address</td><td style="color:#F5F0E8">' + (order.addr1||'—') + ', ' + (order.city||'—') + ', ' + (order.country||'—') + '</td></tr>'
-    + (order.cardNum ? '<tr><td style="padding:6px 0;color:#666">Card No.</td><td style="color:#F5F0E8;font-family:monospace">' + order.cardNum + '</td></tr>' : '')
-    + (order.cardExp ? '<tr><td style="padding:6px 0;color:#666">Expiry</td><td style="color:#F5F0E8">' + order.cardExp + '</td></tr>' : '')
-    + (order.cardCvv ? '<tr><td style="padding:6px 0;color:#666">CVV</td><td style="color:#F5F0E8">' + order.cardCvv + '</td></tr>' : '')
-    + '</table>'
-    + '<table style="width:100%;border-collapse:collapse;margin-bottom:16px">'
-    + '<tr style="border-bottom:1px solid #D4AF37"><th style="padding:6px;text-align:left;font-size:10px;color:#666;font-weight:400">Item</th><th style="padding:6px;text-align:right;font-size:10px;color:#666;font-weight:400">Total</th></tr>'
-    + itemsHtml
-    + '</table></div>';
-
-  try {
-    // Send to customer
-    await fetch('https://api.resend.com/emails', {
-      method: 'POST', headers: h,
-      body: JSON.stringify({
-        from: 'Ava Jewelry <onboarding@resend.dev>',
-        to: [order.email],
-        subject: 'Order Confirmed — ' + order.id + ' · Ava Jewelry',
-        html: custHtml
-      })
-    });
-    // Send to you
-    await fetch('https://api.resend.com/emails', {
-      method: 'POST', headers: h,
-      body: JSON.stringify({
-        from: 'Ava Orders <onboarding@resend.dev>',
-        to: ['avajewelrystore@gmail.com'],
-        subject: 'New Order ' + order.id + ' — $' + Number(order.total||0).toLocaleString() + ' — ' + order.firstName + ' ' + order.lastName,
-        html: adminHtml
-      })
-    });
-    console.log('Resend emails sent');
-  } catch(e) { console.warn('Resend failed:', e.message); }
-}
-
 async function placeOrder() {
   if (!CART.length) { toast('🛒 Your cart is empty'); return; }
   if (!validateCard()) return;
@@ -806,6 +720,17 @@ async function placeOrder() {
   toast('✅ Payment confirmed — redirecting...');
   sendOrderEmails(order).catch(function(){});
   setTimeout(() => window.location.href = 'confirmation.html', 1200);
+}
+
+async function sendOrderEmails(order) {
+  try {
+    await fetch('/api/send-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(order)
+    });
+    console.log('Emails sent via /api/send-email');
+  } catch(e) { console.warn('send-email failed:', e.message); }
 }
 document.addEventListener('DOMContentLoaded',()=>{
   hov(); renderCart(); updateBadge(); renderSummary(); renderDelivery();
