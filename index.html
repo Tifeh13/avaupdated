@@ -150,8 +150,9 @@ footer{background:var(--dark);border-top:1px solid var(--border);padding:5rem 5r
 @media(max-width:480px){.fg{grid-template-columns:1fr}}
 
 .hero{height:100vh;min-height:620px;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden}
-.hbg{position:absolute;inset:0}.hbg img{width:100%;height:100%;object-fit:cover;opacity:.5}
-.hbg::after{content:'';position:absolute;inset:0;background:linear-gradient(to bottom,rgba(7,7,7,.2),rgba(7,7,7,.65))}
+/* ── HERO: image removed — replaced with CSS gold gradient ── */
+.hbg{position:absolute;inset:0;background:radial-gradient(ellipse at 60% 40%,rgba(212,175,55,.13) 0%,transparent 65%),radial-gradient(ellipse at 20% 80%,rgba(212,175,55,.07) 0%,transparent 55%),linear-gradient(160deg,#0a0a08 0%,#111108 40%,#0d0d07 100%)}
+.hbg::after{content:'';position:absolute;inset:0;background:linear-gradient(to bottom,rgba(7,7,7,.1),rgba(7,7,7,.5))}
 .hc{position:relative;z-index:2;text-align:center;max-width:820px;padding:2rem}
 .h-tag{font-size:.6rem;letter-spacing:.45em;text-transform:uppercase;color:var(--gold);margin-bottom:1.5rem;display:block}
 .h-title{font-family:'Cormorant Garamond',serif;font-size:clamp(3.2rem,8vw,7rem);font-weight:300;line-height:.93;margin-bottom:2rem}
@@ -168,17 +169,29 @@ footer{background:var(--dark);border-top:1px solid var(--border);padding:5rem 5r
 .sec-sub{font-size:.7rem;letter-spacing:.12em;color:var(--wd);margin-top:.7rem}
 .cg{display:grid;grid-template-columns:repeat(5,1fr);gap:1.2rem}
 .cc{position:relative;overflow:hidden;aspect-ratio:.72;border:1px solid var(--border);display:block}
-.cc img{width:100%;height:100%;object-fit:cover;transition:transform .6s}
-.cc:hover img{transform:scale(1.08)}
-.cc-over{position:absolute;inset:0;background:linear-gradient(to top,rgba(7,7,7,.88),rgba(7,7,7,.15));display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:1.5rem;transition:background .3s}
+/* ── CATEGORY CARDS: images removed — CSS gradient backgrounds per category ── */
+.cc-bg{width:100%;height:100%;transition:transform .6s}
+.cc:hover .cc-bg{transform:scale(1.08)}
+.cc-bg-watches{background:linear-gradient(145deg,#0d0d0b 0%,#1a1608 50%,#0f0e07 100%)}
+.cc-bg-rings{background:linear-gradient(145deg,#0c0c0a 0%,#191407 50%,#0e0d07 100%)}
+.cc-bg-necklaces{background:linear-gradient(145deg,#0d0d0b 0%,#181508 50%,#100f08 100%)}
+.cc-bg-bracelets{background:linear-gradient(145deg,#0c0b0a 0%,#171408 45%,#0f0e07 100%)}
+.cc-bg-earrings{background:linear-gradient(145deg,#0d0c0a 0%,#1a1608 50%,#0f0e07 100%)}
+/* Gold shimmer accent on each category tile */
+.cc-bg::after{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at 50% 30%,rgba(212,175,55,.12) 0%,transparent 65%);pointer-events:none}
+/* Category icon in centre of tile */
+.cc-icon{position:absolute;top:50%;left:50%;transform:translate(-50%,-65%);font-size:3rem;opacity:.18;z-index:2;transition:opacity .4s,transform .4s}
+.cc:hover .cc-icon{opacity:.28;transform:translate(-50%,-70%)}
+.cc-over{position:absolute;inset:0;background:linear-gradient(to top,rgba(7,7,7,.88),rgba(7,7,7,.15));display:flex;flex-direction:column;align-items:center;justify-content:flex-end;padding:1.5rem;transition:background .3s;z-index:3}
 .cc-name{font-family:'Cormorant Garamond',serif;font-size:1.15rem;font-weight:300;color:var(--white);margin-bottom:.25rem}
 .cc-ct{font-size:.52rem;letter-spacing:.28em;text-transform:uppercase;color:var(--gold)}
 .cc-link{margin-top:.7rem;font-size:.52rem;letter-spacing:.22em;text-transform:uppercase;color:var(--wd);border-bottom:1px solid rgba(212,175,55,.3);padding-bottom:2px;transition:all .3s}
 .cc:hover .cc-link{color:var(--gold);border-color:var(--gold)}
 .fg2{display:grid;grid-template-columns:repeat(3,1fr);gap:1.4rem}
 .bnr{position:relative;height:480px;overflow:hidden;display:flex;align-items:center;justify-content:center}
-.bnr-bg{position:absolute;inset:0}.bnr-bg img{width:100%;height:100%;object-fit:cover;opacity:.4}
-.bnr-bg::after{content:'';position:absolute;inset:0;background:rgba(7,7,7,.5)}
+/* ── BANNER: image removed — CSS gold gradient background ── */
+.bnr-bg{position:absolute;inset:0;background:radial-gradient(ellipse at 70% 50%,rgba(212,175,55,.1) 0%,transparent 60%),linear-gradient(135deg,#090908 0%,#131108 50%,#0a0a07 100%)}
+.bnr-bg::after{content:'';position:absolute;inset:0;background:rgba(7,7,7,.35)}
 .bnr-c{position:relative;z-index:2;text-align:center;max-width:680px;padding:2rem}
 .bnr-tag{font-size:.6rem;letter-spacing:.45em;text-transform:uppercase;color:var(--gold);margin-bottom:1rem;display:block}
 .bnr-title{font-family:'Cormorant Garamond',serif;font-size:clamp(2rem,4vw,3.2rem);font-weight:300;margin-bottom:1.2rem}
@@ -306,7 +319,8 @@ footer{background:var(--dark);border-top:1px solid var(--border);padding:5rem 5r
 </div>
 
 <div class="hero">
-  <div class="hbg"><img src="https://images.pexels.com/photos/190819/pexels-photo-190819.jpeg?auto=compress&cs=tinysrgb&w=1400&h=800&fit=crop" alt="Hero" fetchpriority="high"></div>
+  <!-- Hero image removed — CSS gradient background via .hbg -->
+  <div class="hbg"></div>
   <div class="hc">
     <span class="h-tag">New Collection 2026</span>
     <h1 class="h-title">Where Gold<br>Meets <em>Eternity</em></h1>
@@ -324,42 +338,58 @@ footer{background:var(--dark);border-top:1px solid var(--border);padding:5rem 5r
     <h2 class="sec-title">Fine <em>Collections</em></h2>
     <p class="sec-sub">Five categories of exceptional craftsmanship</p>
   </div>
-  <div class="cg"><a href="shop.html?cat=Watches" class="cc hel">
-  <img src="https://images.pexels.com/photos/277390/pexels-photo-277390.jpeg?auto=compress&cs=tinysrgb&w=600&h=700&fit=crop" alt="Watches" loading="lazy">
-  <div class="cc-over">
-    <div class="cc-name">Watches</div>
-    <div class="cc-ct">64 pieces</div>
-    <span class="cc-link">Explore →</span>
+  <div class="cg">
+    <a href="shop.html?cat=Watches" class="cc hel">
+      <!-- Image removed — CSS gradient background -->
+      <div class="cc-bg cc-bg-watches"></div>
+      <div class="cc-icon">⌚</div>
+      <div class="cc-over">
+        <div class="cc-name">Watches</div>
+        <div class="cc-ct">64 pieces</div>
+        <span class="cc-link">Explore →</span>
+      </div>
+    </a>
+    <a href="shop.html?cat=Rings" class="cc hel">
+      <!-- Image removed — CSS gradient background -->
+      <div class="cc-bg cc-bg-rings"></div>
+      <div class="cc-icon">💍</div>
+      <div class="cc-over">
+        <div class="cc-name">Rings</div>
+        <div class="cc-ct">92 pieces</div>
+        <span class="cc-link">Explore →</span>
+      </div>
+    </a>
+    <a href="shop.html?cat=Necklaces" class="cc hel">
+      <!-- Image removed — CSS gradient background -->
+      <div class="cc-bg cc-bg-necklaces"></div>
+      <div class="cc-icon">📿</div>
+      <div class="cc-over">
+        <div class="cc-name">Necklaces</div>
+        <div class="cc-ct">58 pieces</div>
+        <span class="cc-link">Explore →</span>
+      </div>
+    </a>
+    <a href="shop.html?cat=Bracelets" class="cc hel">
+      <!-- Image removed — CSS gradient background -->
+      <div class="cc-bg cc-bg-bracelets"></div>
+      <div class="cc-icon">✨</div>
+      <div class="cc-over">
+        <div class="cc-name">Bracelets</div>
+        <div class="cc-ct">47 pieces</div>
+        <span class="cc-link">Explore →</span>
+      </div>
+    </a>
+    <a href="shop.html?cat=Earrings" class="cc hel">
+      <!-- Image removed — CSS gradient background -->
+      <div class="cc-bg cc-bg-earrings"></div>
+      <div class="cc-icon">💎</div>
+      <div class="cc-over">
+        <div class="cc-name">Earrings</div>
+        <div class="cc-ct">73 pieces</div>
+        <span class="cc-link">Explore →</span>
+      </div>
+    </a>
   </div>
-</a><a href="shop.html?cat=Rings" class="cc hel">
-  <img src="https://images.pexels.com/photos/1682637/pexels-photo-1682637.jpeg?auto=compress&cs=tinysrgb&w=600&h=700&fit=crop" alt="Rings" loading="lazy">
-  <div class="cc-over">
-    <div class="cc-name">Rings</div>
-    <div class="cc-ct">92 pieces</div>
-    <span class="cc-link">Explore →</span>
-  </div>
-</a><a href="shop.html?cat=Necklaces" class="cc hel">
-  <img src="https://images.pexels.com/photos/1191531/pexels-photo-1191531.jpeg?auto=compress&cs=tinysrgb&w=600&h=700&fit=crop" alt="Necklaces" loading="lazy">
-  <div class="cc-over">
-    <div class="cc-name">Necklaces</div>
-    <div class="cc-ct">58 pieces</div>
-    <span class="cc-link">Explore →</span>
-  </div>
-</a><a href="shop.html?cat=Bracelets" class="cc hel">
-  <img src="https://images.pexels.com/photos/1654489/pexels-photo-1654489.jpeg?auto=compress&cs=tinysrgb&w=600&h=700&fit=crop" alt="Bracelets" loading="lazy">
-  <div class="cc-over">
-    <div class="cc-name">Bracelets</div>
-    <div class="cc-ct">47 pieces</div>
-    <span class="cc-link">Explore →</span>
-  </div>
-</a><a href="shop.html?cat=Earrings" class="cc hel">
-  <img src="https://images.pexels.com/photos/4521416/pexels-photo-4521416.jpeg?auto=compress&cs=tinysrgb&w=600&h=700&fit=crop" alt="Earrings" loading="lazy">
-  <div class="cc-over">
-    <div class="cc-name">Earrings</div>
-    <div class="cc-ct">73 pieces</div>
-    <span class="cc-link">Explore →</span>
-  </div>
-</a></div>
 </section>
 <section class="sec">
   <div class="sec-hd">
@@ -371,7 +401,8 @@ footer{background:var(--dark);border-top:1px solid var(--border);padding:5rem 5r
   <div style="text-align:center;margin-top:3rem"><button class="btn-o" onclick="window.location='shop.html'">View All Pieces →</button></div>
 </section>
 <div class="bnr">
-  <div class="bnr-bg"><img src="https://images.pexels.com/photos/1616096/pexels-photo-1616096.jpeg?auto=compress&cs=tinysrgb&w=1400&h=800&fit=crop" alt="Campaign" loading="lazy"></div>
+  <!-- Banner image removed — CSS gradient background via .bnr-bg -->
+  <div class="bnr-bg"></div>
   <div class="bnr-c">
     <span class="bnr-tag">Limited Time</span>
     <h2 class="bnr-title">Up to 30% Off Selected Pieces</h2>
