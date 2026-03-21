@@ -88,7 +88,6 @@ img{display:block}
 .iw .sk{position:absolute;inset:0;background:linear-gradient(90deg,var(--card) 25%,var(--card2) 50%,var(--card) 75%);background-size:200% 100%;animation:sk 1.4s infinite;z-index:1}
 @keyframes sk{0%{background-position:200% 0}100%{background-position:-200% 0}}
 .iw img{width:100%;height:100%;object-fit:cover;position:relative;z-index:2}
-/* Gold placeholder shown when product has no image */
 .img-placeholder{width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(135deg,#0e0e0e,#1a1a1a);border:1px solid var(--border);gap:.5rem}
 .img-placeholder span{font-size:2rem;opacity:.25}
 .img-placeholder small{font-size:.48rem;letter-spacing:.25em;text-transform:uppercase;color:var(--gold);opacity:.5}
@@ -261,7 +260,7 @@ footer{background:var(--dark);border-top:1px solid var(--border);padding:5rem 5r
   <ul class="nav-links"><li><a href="index.html" class="nl">Home</a></li><li><a href="shop.html" class="nl on">Shop</a></li><li><a href="shop.html?cat=Watches" class="nl">Watches</a></li><li><a href="shop.html?cat=Rings" class="nl">Rings</a></li><li><a href="shop.html?cat=Necklaces" class="nl">Necklaces</a></li><li><a href="shop.html?cat=Bracelets" class="nl">Bracelets</a></li><li><a href="shop.html?cat=Earrings" class="nl">Earrings</a></li></ul>
   <div class="nav-r">
     <div class="nsrch"><input type="text" id="nq" placeholder="Search..." onkeydown="if(event.key==='Enter')window.location='shop.html?q='+encodeURIComponent(this.value)"><button class="nsrch-btn" onclick="window.location='shop.html?q='+document.getElementById('nq').value">🔍</button></div>
-    <button class="nib" onclick="window.location='wishlist.html'">♡<span class="wbadge" style="position:absolute;top:-4px;right:-4px;background:var(--gold);color:var(--black);font-size:.42rem;font-weight:700;width:14px;height:14px;border-radius:50%;display:none;align-items:center;justify-content:center"></span</button>
+    <button class="nib" onclick="window.location='wishlist.html'">♡</button>
     <button class="nib" onclick="togCart()">🛒<span class="nbadge" id="cbadge">0</span></button>
     <button class="nib" onclick="window.location='login.html'">👤</button>
     <button class="hbtn" onclick="togNav()"><span></span><span></span><span></span></button>
@@ -279,7 +278,7 @@ footer{background:var(--dark);border-top:1px solid var(--border);padding:5rem 5r
 <div class="shero">
   <div class="bc"><a href="index.html">Home</a><span class="bc-sep">›</span><span id="bcl" style="color:var(--wd)">All Products</span></div>
   <h1>Our <em>Collection</em></h1>
-  <p class="shero-sub"><span class="live"></span><span>334 handcrafted pieces — refreshed every visit</span></p>
+  <p class="shero-sub"><span class="live"></span><span id="heroCount">0 pieces available</span></p>
 </div>
 <div class="sbar">
   <div class="si">
@@ -300,11 +299,11 @@ footer{background:var(--dark);border-top:1px solid var(--border);padding:5rem 5r
   <aside class="sidebar">
     <div class="fb"><div class="fh">Category <button class="fclr" onclick="clearAll()">Clear all</button></div>
       <div class="fopts">
-        <label class="fo"><input type="checkbox" class="cf" value="Watches" onchange="applyF()"> Watches <span class="fct">64</span></label>
-        <label class="fo"><input type="checkbox" class="cf" value="Rings" onchange="applyF()"> Rings <span class="fct">92</span></label>
-        <label class="fo"><input type="checkbox" class="cf" value="Necklaces" onchange="applyF()"> Necklaces <span class="fct">58</span></label>
-        <label class="fo"><input type="checkbox" class="cf" value="Bracelets" onchange="applyF()"> Bracelets <span class="fct">47</span></label>
-        <label class="fo"><input type="checkbox" class="cf" value="Earrings" onchange="applyF()"> Earrings <span class="fct">73</span></label>
+        <label class="fo"><input type="checkbox" class="cf" value="Watches" onchange="applyF()"> Watches</label>
+        <label class="fo"><input type="checkbox" class="cf" value="Rings" onchange="applyF()"> Rings</label>
+        <label class="fo"><input type="checkbox" class="cf" value="Necklaces" onchange="applyF()"> Necklaces</label>
+        <label class="fo"><input type="checkbox" class="cf" value="Bracelets" onchange="applyF()"> Bracelets</label>
+        <label class="fo"><input type="checkbox" class="cf" value="Earrings" onchange="applyF()"> Earrings</label>
       </div></div>
     <div class="fb"><div class="fh">Price Range</div>
       <div class="pi"><input class="pin" id="pmin" type="number" placeholder="Min $"><span style="color:var(--gray)">—</span><input class="pin" id="pmax" type="number" placeholder="Max $"></div>
@@ -377,43 +376,14 @@ footer{background:var(--dark);border-top:1px solid var(--border);padding:5rem 5r
 <button class="btop" id="btop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
 
 <script>
-// ─── LIVE CATALOG: reads from admin panel localStorage ───
-// BASE_CATALOG has NO hardcoded images — all images must come from admin panel.
-// Go to admin.html → Products → edit each product → set the Image URL → Save.
-const BASE_CATALOG=[
-  {id:1,cat:"Rings",name:"Lumière Solitaire Ring",mat:"18K White Gold · 1.2ct VVS1 Diamond",price:"$4,299",num:4299,old:"$5,374",badge:"sale",rating:5,rev:87,stock:null,metal:"white gold",stone:"diamond",img:""},
-  {id:2,cat:"Rings",name:"Auric Trilogy Ring",mat:"18K Yellow Gold · 2ct Three-Stone Diamond",price:"$7,800",num:7800,old:null,badge:"hot",rating:5,rev:41,stock:4,metal:"yellow gold",stone:"diamond",img:""},
-  {id:3,cat:"Rings",name:"Céleste Pavé Band",mat:"18K Yellow Gold · Full Pavé Diamond Set",price:"$3,400",num:3400,old:"$4,000",badge:"sale",rating:4,rev:35,stock:null,metal:"yellow gold",stone:"diamond",img:""},
-  {id:4,cat:"Rings",name:"Rosé Oval Solitaire",mat:"18K Rose Gold · 1ct Oval Diamond",price:"$5,200",num:5200,old:null,badge:"new",rating:5,rev:22,stock:3,metal:"rose gold",stone:"diamond",img:""},
-  {id:5,cat:"Rings",name:"Ceylon Sapphire Ring",mat:"18K Platinum · 3ct Ceylon Sapphire",price:"$6,800",num:6800,old:"$8,200",badge:"sale",rating:4,rev:31,stock:null,metal:"platinum",stone:"sapphire",img:""},
-  {id:6,cat:"Rings",name:"Marquise Ruby Statement",mat:"18K Yellow Gold · Burmese Ruby Centre",price:"$8,400",num:8400,old:null,badge:"limited",rating:5,rev:14,stock:2,metal:"yellow gold",stone:"ruby",img:""},
-  {id:7,cat:"Watches",name:"Auric Chronograph II",mat:"18K Yellow Gold · Automatic Movement",price:"$12,500",num:12500,old:null,badge:"new",rating:5,rev:28,stock:3,metal:"yellow gold",stone:"none",img:""},
-  {id:8,cat:"Watches",name:"Pavé Lady Timepiece",mat:"18K Rose Gold · Diamond Bezel · 36mm",price:"$18,000",num:18000,old:null,badge:"limited",rating:5,rev:11,stock:2,metal:"rose gold",stone:"diamond",img:""},
-  {id:9,cat:"Watches",name:"Prestige Dress Watch",mat:"18K White Gold · Swiss Automatic · 40mm",price:"$9,200",num:9200,old:null,badge:null,rating:4,rev:18,stock:null,metal:"white gold",stone:"none",img:""},
-  {id:10,cat:"Watches",name:"Grand Chronos Tourbillon",mat:"18K Rose Gold · Manual Wind · 42mm",price:"$24,000",num:24000,old:null,badge:"limited",rating:5,rev:6,stock:1,metal:"rose gold",stone:"none",img:""},
-  {id:11,cat:"Necklaces",name:"Celeste Diamond Necklace",mat:"18K Yellow Gold · 3.5ct Tennis Style",price:"$8,900",num:8900,old:null,badge:null,rating:5,rev:44,stock:null,metal:"yellow gold",stone:"diamond",img:""},
-  {id:12,cat:"Necklaces",name:"Aurora Diamond Pendant",mat:"18K White Gold · Floating Diamond Drop",price:"$2,800",num:2800,old:null,badge:"new",rating:5,rev:52,stock:null,metal:"white gold",stone:"diamond",img:""},
-  {id:13,cat:"Necklaces",name:"Infinity Diamond Collar",mat:"18K White Gold · 5ct Total Weight",price:"$14,200",num:14200,old:null,badge:"limited",rating:5,rev:9,stock:2,metal:"white gold",stone:"diamond",img:""},
-  {id:14,cat:"Necklaces",name:"Riviera Sapphire Pendant",mat:"18K Rose Gold · Ceylon Sapphire Drop",price:"$3,600",num:3600,old:null,badge:null,rating:5,rev:27,stock:null,metal:"rose gold",stone:"sapphire",img:""},
-  {id:15,cat:"Necklaces",name:"Verdure Emerald Drop",mat:"18K Yellow Gold · Colombian Emerald",price:"$5,100",num:5100,old:"$6,300",badge:"sale",rating:4,rev:19,stock:null,metal:"yellow gold",stone:"emerald",img:""},
-  {id:16,cat:"Bracelets",name:"Rivière Tennis Bracelet",mat:"18K Rose Gold · 2ct Total Diamond",price:"$6,200",num:6200,old:null,badge:"hot",rating:4,rev:63,stock:5,metal:"rose gold",stone:"diamond",img:""},
-  {id:17,cat:"Bracelets",name:"Heritage Charm Bracelet",mat:"18K Yellow Gold · 12 Hand-Set Charms",price:"$1,850",num:1850,old:null,badge:"new",rating:5,rev:33,stock:null,metal:"yellow gold",stone:"none",img:""},
-  {id:18,cat:"Bracelets",name:"Manchette Cuff",mat:"18K White Gold · Hammered & Polished",price:"$3,200",num:3200,old:null,badge:null,rating:5,rev:47,stock:null,metal:"white gold",stone:"none",img:""},
-  {id:19,cat:"Bracelets",name:"Étincelle Diamond Bangle",mat:"18K Yellow Gold · Channel-Set Diamonds",price:"$4,800",num:4800,old:"$5,900",badge:"sale",rating:5,rev:29,stock:null,metal:"yellow gold",stone:"diamond",img:""},
-  {id:20,cat:"Earrings",name:"Étoile Halo Studs",mat:"18K White Gold · 0.8ct Each Halo",price:"$5,100",num:5100,old:null,badge:"new",rating:5,rev:19,stock:null,metal:"white gold",stone:"diamond",img:""},
-  {id:21,cat:"Earrings",name:"Cascade Drop Earrings",mat:"18K White Gold · Pear Cut Diamond",price:"$3,600",num:3600,old:null,badge:null,rating:5,rev:27,stock:null,metal:"white gold",stone:"diamond",img:""},
-  {id:22,cat:"Earrings",name:"Sol Briolette Drops",mat:"18K Yellow Gold · Briolette Diamond",price:"$4,100",num:4100,old:null,badge:"hot",rating:5,rev:22,stock:null,metal:"yellow gold",stone:"diamond",img:""},
-  {id:23,cat:"Earrings",name:"Azur Sapphire Drops",mat:"18K Rose Gold · Ceylon Sapphire",price:"$2,950",num:2950,old:"$3,600",badge:"sale",rating:4,rev:38,stock:null,metal:"rose gold",stone:"sapphire",img:""},
-  {id:24,cat:"Earrings",name:"Baroque Pearl Ear Climbers",mat:"18K Yellow Gold · South Sea Pearl & Diamond",price:"$3,800",num:3800,old:null,badge:"new",rating:5,rev:16,stock:3,metal:"yellow gold",stone:"diamond",img:""},
-];
+// ─── CATALOG: reads from admin localStorage only. No hardcoded products. ───
+const BASE_CATALOG = [];
 
-// ✅ Admin-connected: products saved in admin.html load here automatically.
-// Images set in admin override the empty img:"" above.
 let CATALOG;
 try {
   const _saved = localStorage.getItem('ava_products');
-  CATALOG = (_saved && JSON.parse(_saved).length) ? JSON.parse(_saved) : BASE_CATALOG;
-} catch(e) { CATALOG = BASE_CATALOG; }
+  CATALOG = (_saved && JSON.parse(_saved).length) ? JSON.parse(_saved) : [];
+} catch(e) { CATALOG = []; }
 
 // CURSOR
 const CUR=document.getElementById('cur'),CRING=document.getElementById('cring');
@@ -487,7 +457,6 @@ document.addEventListener('DOMContentLoaded',()=>{hov();renderCart();updateBadge
 
 let ALL=[...CATALOG],FILT=[...CATALOG],VIEW='grid';
 
-// Returns the image HTML — gold placeholder if no image set
 function imgHTML(p){
   if(p.img){
     return `<div class="iw"><div class="sk"></div><img src="${p.img}" alt="${p.name}" loading="lazy"></div>`;
@@ -497,9 +466,13 @@ function imgHTML(p){
 
 function renderGrid(arr){
   const g=document.getElementById('grid');
+  const heroCount=document.getElementById('heroCount');
+  if(heroCount) heroCount.textContent=CATALOG.length+' pieces available';
   if(!arr.length){
-    g.innerHTML='<div style="grid-column:1/-1;padding:6rem 2rem;text-align:center;color:var(--gray);font-size:.68rem;letter-spacing:.2em;text-transform:uppercase">No products match your selection</div>';
-    document.getElementById('rct').innerHTML='Showing <strong>0</strong> results';return;
+    g.innerHTML='<div style="grid-column:1/-1;padding:6rem 2rem;text-align:center;color:var(--gray);font-size:.68rem;letter-spacing:.2em;text-transform:uppercase">No products available yet</div>';
+    document.getElementById('rct').innerHTML='Showing <strong>0</strong> products';
+    document.getElementById('pag').innerHTML='';
+    return;
   }
   g.className='grid'+(VIEW==='list'?' list':'');
   const bl={new:'New',sale:'Sale',hot:'Hot',limited:'Limited'};
@@ -526,8 +499,12 @@ function renderGrid(arr){
       </div>
     </div>`;
   }).join('');
-  document.getElementById('rct').innerHTML=`Showing <strong>${arr.length}</strong> of <strong>334</strong> products`;
-  document.getElementById('pag').innerHTML=`<button class="pgb">‹</button><button class="pgb on">1</button><button class="pgb">2</button><button class="pgb">3</button><span style="color:var(--gray);padding:0 .3rem">…</span><button class="pgb">›</button>`;
+  document.getElementById('rct').innerHTML=`Showing <strong>${arr.length}</strong> product${arr.length!==1?'s':''}`;
+  if(arr.length>12){
+    document.getElementById('pag').innerHTML=`<button class="pgb">‹</button><button class="pgb on">1</button><button class="pgb">2</button><button class="pgb">3</button><span style="color:var(--gray);padding:0 .3rem">…</span><button class="pgb">›</button>`;
+  } else {
+    document.getElementById('pag').innerHTML='';
+  }
   setTimeout(hov,50);
 }
 
@@ -582,6 +559,7 @@ function filterCat(cat){
 
 async function doSearch(){
   const q=document.getElementById('si').value.trim();if(!q)return;
+  if(!CATALOG.length){toast('No products available yet');return;}
   const btn=document.getElementById('sbtn');
   btn.classList.add('loading');btn.textContent='⟳ Searching...';
   try{
@@ -636,38 +614,13 @@ function saveWish(w){localStorage.setItem('ava_wishlist',JSON.stringify(w));}
 function toggleWish(id){
   let w=getWish();const has=w.includes(id);
   if(has)w=w.filter(x=>x!==id);else w.push(id);
-  saveWish(w);updateWishNav();return !has;
+  saveWish(w);return !has;
 }
-function isWished(id){return getWish().includes(id);}
-function updateWishNav(){
-  const w=getWish();
-  const btn=document.querySelector('.nib[onclick*="wishlist.html"]');
-  if(!btn)return;
-  let badge=btn.querySelector('.wbadge');
-  if(!badge){badge=document.createElement('span');badge.className='wbadge';badge.style.cssText='position:absolute;top:-4px;right:-4px;background:var(--gold);color:var(--black);font-size:.42rem;font-weight:700;width:14px;height:14px;border-radius:50%;display:none;align-items:center;justify-content:center';btn.appendChild(badge);}
-  if(w.length){badge.style.display='flex';badge.textContent=w.length;btn.style.color='var(--gold)';}
-  else{badge.style.display='none';btn.style.color='';}
-}
-function updateAuthNav(){
-  const s=localStorage.getItem('ava_session');
-  const btn=document.querySelector('.nib[onclick*="login.html"]');
-  if(!btn)return;
-  if(s){btn.style.color='var(--gold)';btn.title='My Account';}
-}
-updateWishNav();updateAuthNav();markWished();
-
 function doToggleWish(btn,id){
   const added=toggleWish(id);
   btn.style.color=added?'var(--gold)':'';
   btn.style.borderColor=added?'var(--gold)':'';
-  toast(added?'♡ Added to <a href="wishlist.html" style="color:var(--gold)">Wishlist</a>':'♡ Removed from Wishlist');
-}
-function markWished(){
-  const w=getWish();
-  document.querySelectorAll('.qact[onclick*="doToggleWish"]').forEach(btn=>{
-    const m=btn.getAttribute('onclick').match(/doToggleWish\(this,(\d+)\)/);
-    if(m&&w.includes(parseInt(m[1]))){btn.style.color='var(--gold)';btn.style.borderColor='var(--gold)';}
-  });
+  toast(added?'♡ Added to Wishlist':'♡ Removed from Wishlist');
 }
 </script>
 </body>
