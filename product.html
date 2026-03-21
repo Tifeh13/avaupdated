@@ -443,16 +443,14 @@ function initProduct(){
     mainPh.innerHTML = '<span>💎</span><small>' + PROD.cat + '</small>';
   }
 
-  // Thumbs: this product + up to 3 from same category
-  const same = CATALOG.filter(p => p.cat === PROD.cat && p.id !== PROD.id).slice(0, 3);
-  const thumbArr = [PROD, ...same];
-  document.getElementById('thumbs').innerHTML = thumbArr.map((p, i) => `
-    <div class="thumb${i===0?' on':''} hel" onclick="setMain('${p.img}','${p.cat}',this)">
-      ${p.img
-        ? `<img src="${p.img}" alt="${p.name}" loading="lazy">`
-        : `<div class="img-placeholder" style="height:100%"><span style="font-size:1.2rem">💎</span></div>`
-      }
-    </div>`).join('');
+  // Thumbs: only show the current product's own image — no other products
+  document.getElementById('thumbs').innerHTML = PROD.img
+    ? `<div class="thumb on hel" onclick="setMain('${PROD.img}','${PROD.cat}',this)">
+        <img src="${PROD.img}" alt="${PROD.name}" loading="lazy">
+       </div>`
+    : `<div class="thumb on hel">
+        <div class="img-placeholder" style="height:100%"><span style="font-size:1.2rem">💎</span></div>
+       </div>`;
 
   // Info
   document.getElementById('pcat').textContent     = PROD.cat;
