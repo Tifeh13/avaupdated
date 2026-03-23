@@ -330,10 +330,12 @@ if (localStorage.getItem('ava_catalog_version') !== '2') {
 // ─── LIVE CATALOG: reads from admin localStorage only. No hardcoded products. ───
 const BASE_CATALOG = [];
 
-let CATALOG;
+let CATALOG = [];
 try {
   const _saved = localStorage.getItem('ava_products');
-  CATALOG = (_saved && JSON.parse(_saved).length) ? JSON.parse(_saved) : [];
+  if (_saved) {
+    CATALOG = JSON.parse(_saved) || [];
+  }
 } catch(e) { CATALOG = []; }
 
 // CURSOR

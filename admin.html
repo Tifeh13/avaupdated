@@ -1094,7 +1094,17 @@ let images   = JSON.parse(localStorage.getItem('ava_images') || '[]');
 let editId   = null;
 let pendingImgUrl = null;
 
-function saveProducts() { localStorage.setItem('ava_products', JSON.stringify(products)); }
+function saveProducts() {
+  // Write asynchronously to avoid blocking the UI
+  setTimeout(() => {
+    try {
+      localStorage.setItem('ava_products', JSON.stringify(products));
+    } catch(e) {
+      // localStorage quota exceeded — images are too large
+      toast('⚠ Storage full — try smaller images', 'err');
+    }
+  }, 0);
+}
 function saveImages()   { localStorage.setItem('ava_images', JSON.stringify(images)); }
 
 // ══════════════════════════════════════════════
@@ -1415,11 +1425,30 @@ function saveProduct() {
 
 function inlineUpload(input) {
   const file = input.files[0]; if (!file) return;
+  compressImage(file, 800, 0.72, dataUrl => {
+    document.getElementById('f-img').value = dataUrl;
+    previewImg();
+    toast('Image compressed & embedded ✓');
+  });
+}
+
+// Compress image to max width/height and quality before storing
+function compressImage(file, maxSize, quality, callback) {
   const reader = new FileReader();
   reader.onload = e => {
-    document.getElementById('f-img').value = e.target.result;
-    previewImg();
-    toast('Image embedded ✓');
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      let w = img.width, h = img.height;
+      if (w > maxSize || h > maxSize) {
+        if (w > h) { h = Math.round(h * maxSize / w); w = maxSize; }
+        else       { w = Math.round(w * maxSize / h); h = maxSize; }
+      }
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      callback(canvas.toDataURL('image/jpeg', quality));
+    };
+    img.src = e.target.result;
   };
   reader.readAsDataURL(file);
 }
@@ -1454,20 +1483,19 @@ function handleFiles(files) {
   const fill = document.getElementById('progressFill');
   bar.classList.add('show'); fill.style.width = '0%';
   Array.from(files).forEach(file => {
-    const reader = new FileReader();
-    reader.onload = e => {
-      const kb = Math.round(file.size / 1024);
-      const size = kb > 1024 ? `${(kb/1024).toFixed(1)}MB` : `${kb}KB`;
-      images.push({ src: e.target.result, name: file.name, size, date: new Date().toLocaleDateString('en-US', {month:'short',day:'numeric'}) });
+    compressImage(file, 800, 0.72, dataUrl => {
+      const origKb = Math.round(file.size / 1024);
+      const compKb = Math.round(dataUrl.length * 0.75 / 1024);
+      const size = compKb > 1024 ? `${(compKb/1024).toFixed(1)}MB` : `${compKb}KB`;
+      images.push({ src: dataUrl, name: file.name, size, date: new Date().toLocaleDateString('en-US', {month:'short',day:'numeric'}) });
       done++;
       fill.style.width = (done/total*100) + '%';
       if (done === total) {
         saveImages(); renderImages(); updateBadges();
-        toast(`${total} image${total>1?'s':''} uploaded ✓`);
+        toast(`${total} image${total>1?'s':''} uploaded & compressed ✓`);
         setTimeout(() => bar.classList.remove('show'), 1000);
       }
-    };
-    reader.readAsDataURL(file);
+    });
   });
 }
 
