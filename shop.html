@@ -375,18 +375,47 @@ footer{background:var(--dark);border-top:1px solid var(--border);padding:5rem 5r
 <div class="tbox" id="tbox"></div>
 <button class="btop" id="btop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
 
-<script>
-// ─── CATALOG: reads from admin localStorage only. No hardcoded products. ───
-const BASE_CATALOG = [];
+<script type="module">
+// ─── FIREBASE: load catalog from Firestore (works across all devices) ───
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const _fbApp = initializeApp({
+  apiKey: "AIzaSyCy9fDJR4Bt31lOa1lQ6sVYjcLCAVx-HTs",
+  authDomain: "avajewelry-28561.firebaseapp.com",
+  projectId: "avajewelry-28561",
+  storageBucket: "avajewelry-28561.firebasestorage.app",
+  messagingSenderId: "715075775873",
+  appId: "1:715075775873:web:4d766238bf8a35228c0c80"
+});
+const _db = getFirestore(_fbApp);
 
 let CATALOG = [];
-// Parse catalog without blocking page render
-try {
-  const _saved = localStorage.getItem('ava_products');
-  if (_saved) {
-    CATALOG = JSON.parse(_saved) || [];
+
+// Load products from Firestore, fall back to localStorage if offline
+async function loadCatalog() {
+  try {
+    const snap = await getDocs(collection(_db, 'products'));
+    CATALOG = snap.docs.map(d => {
+      const data = d.data();
+      // __local: means image is base64 stored only on admin's browser
+      // Show empty (placeholder) on other browsers since we can't access it
+      if (data.img && data.img.startsWith('__local:')) {
+        data.img = '';
+      }
+      return data;
+    }).sort((a,b) => a.id - b.id);
+    localStorage.setItem('ava_products', JSON.stringify(CATALOG));
+  } catch(e) {
+    console.warn('Firestore unavailable, using localStorage:', e.message);
+    try {
+      const _saved = localStorage.getItem('ava_products');
+      CATALOG = _saved ? JSON.parse(_saved) : [];
+    } catch(e2) { CATALOG = []; }
   }
-} catch(e) { CATALOG = []; }
+  ALL = [...CATALOG]; FILT = [...CATALOG];
+  initFromUrl();
+}
 
 // CURSOR
 const CUR=document.getElementById('cur'),CRING=document.getElementById('cring');
@@ -456,9 +485,13 @@ function renderCart(){
 function cQ(i,d){CART[i].qty+=d;if(CART[i].qty<=0)CART.splice(i,1);saveCart();renderCart();updateBadge();}
 function rmC(i){CART.splice(i,1);saveCart();renderCart();updateBadge();}
 
-document.addEventListener('DOMContentLoaded',()=>{hov();renderCart();updateBadge();});
+document.addEventListener('DOMContentLoaded',()=>{
+  hov(); renderCart(); updateBadge();
+  // Load catalog from Firestore then render
+  loadCatalog();
+});
 
-let ALL=[...CATALOG],FILT=[...CATALOG],VIEW='grid';
+let ALL=[],FILT=[],VIEW='grid';
 
 function imgHTML(p){
   if(p.img){
@@ -603,14 +636,14 @@ function toggleFilters(){
   btn.textContent=open?'✕ Close':'⚙ Filters';
 }
 
-(function initFromUrl(){
+function initFromUrl(){
   const params=new URLSearchParams(location.search);
   const cat=params.get('cat');const q=params.get('q');const badge=params.get('badge');
   if(cat){document.querySelectorAll('.cf').forEach(c=>c.checked=c.value===cat);document.getElementById('bcl').textContent=cat;}
   if(badge){document.querySelectorAll('.af').forEach(c=>c.checked=c.value===badge);}
   if(q){document.getElementById('si').value=q;setTimeout(doSearch,100);return;}
   applyF();
-})();
+}
 
 function getWish(){try{return JSON.parse(localStorage.getItem('ava_wishlist')||'[]');}catch(e){return [];}}
 function saveWish(w){localStorage.setItem('ava_wishlist',JSON.stringify(w));}

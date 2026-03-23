@@ -765,12 +765,20 @@ img { display: block; }
                 <input type="text" id="f-mat" placeholder="18K White Gold · 1.2ct VVS1 Round Brilliant">
               </div>
               <div class="field" style="margin-bottom:.8rem">
-                <label>Image URL</label>
-                <input type="text" id="f-img" placeholder="https://images.pexels.com/... or paste base64" oninput="previewImg()">
+                <label>Image URL <span style="color:var(--green);font-size:.48rem">(recommended — works on all devices)</span></label>
+                <input type="text" id="f-img" placeholder="https://your-image-url.com/photo.jpg" oninput="previewImg()">
                 <img id="imgPreview" class="img-preview" alt="Preview">
               </div>
+              <div class="field" style="margin-bottom:.3rem">
+                <label>Or Upload Photo <span style="color:var(--orange);font-size:.48rem">(only visible on this browser)</span></label>
+              </div>
+              <div style="background:rgba(243,156,18,.08);border:1px solid rgba(243,156,18,.25);padding:.6rem .9rem;font-size:.55rem;color:var(--orange);font-family:var(--mono);margin-bottom:.6rem;line-height:1.6">
+                ⚠ Uploaded photos are stored locally — only YOU can see them.<br>
+                For images visible to customers, use a URL from:<br>
+                <strong style="color:var(--white)">Cloudinary · Imgbb · PostImages · Pexels · any image host</strong>
+              </div>
               <div class="field" style="margin-bottom:1.2rem">
-                <label>Or Upload Photo Directly</label>
+                <label style="display:none">Upload</label>
                 <div class="drop-zone" id="inlineDropZone">
                   <input type="file" accept="image/*" onchange="inlineUpload(this)">
                   <div class="drop-icon">📷</div>
@@ -1085,7 +1093,7 @@ img { display: block; }
 // FIREBASE SETUP
 // ══════════════════════════════════════════════
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, getDocs, addDoc, query, orderBy }
+import { getFirestore, collection, getDocs, addDoc, setDoc, deleteDoc, doc, query, orderBy, onSnapshot }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
@@ -1108,20 +1116,65 @@ const BASE_CATALOG = [];
 // STATE
 // ══════════════════════════════════════════════
 const PASS = 'ava2026';
-let products = JSON.parse(localStorage.getItem('ava_products') || '[]');
+let products = []; // loaded from Firestore on initApp
 let images   = JSON.parse(localStorage.getItem('ava_images') || '[]');
 let editId   = null;
 let pendingImgUrl = null;
 
-function saveProducts() {
-  // Write asynchronously to avoid blocking the UI
-  setTimeout(() => {
-    try {
-      localStorage.setItem('ava_products', JSON.stringify(products));
-    } catch(e) {
-      // localStorage quota exceeded — images are too large
-      toast('⚠ Storage full — try smaller images', 'err');
+// Save a single product to Firestore
+// Images stored as base64 go to localStorage keyed by product id
+// Firestore gets a lightweight version with an img key reference
+async function saveProductToFirestore(p) {
+  if (!p) return;
+  try {
+    let firestoreProduct = { ...p };
+    // If image is base64, store it in localStorage and use a key reference
+    if (p.img && p.img.startsWith('data:')) {
+      const imgKey = 'ava_img_' + p.id;
+      localStorage.setItem(imgKey, p.img);
+      firestoreProduct.img = '__local:' + imgKey;
     }
+    await setDoc(doc(_db, 'products', String(p.id)), firestoreProduct);
+  } catch(e) {
+    console.warn('Firestore save failed:', e.message);
+    toast('⚠ Save failed — check connection', 'err');
+  }
+}
+
+// Delete a single product from Firestore
+async function deleteProductFromFirestore(id) {
+  try {
+    await deleteDoc(doc(_db, 'products', String(id)));
+  } catch(e) {
+    console.warn('Firestore delete failed:', e.message);
+  }
+}
+
+// Load all products from Firestore and resolve local image references
+async function loadProductsFromFirestore() {
+  try {
+    const snap = await getDocs(collection(_db, 'products'));
+    products = snap.docs.map(d => {
+      const data = d.data();
+      // Resolve local image references
+      if (data.img && data.img.startsWith('__local:')) {
+        const key = data.img.replace('__local:', '');
+        data.img = localStorage.getItem(key) || '';
+      }
+      return data;
+    });
+    products.sort((a,b) => a.id - b.id);
+    localStorage.setItem('ava_products', JSON.stringify(products));
+  } catch(e) {
+    console.warn('Firestore load failed, falling back to localStorage:', e.message);
+    products = JSON.parse(localStorage.getItem('ava_products') || '[]');
+  }
+}
+
+function saveProducts() {
+  // Keep localStorage in sync for shop pages
+  setTimeout(() => {
+    try { localStorage.setItem('ava_products', JSON.stringify(products)); } catch(e) {}
   }, 0);
 }
 function saveImages()   { localStorage.setItem('ava_images', JSON.stringify(images)); }
@@ -1200,7 +1253,9 @@ function toast(msg, type='ok') {
 // ══════════════════════════════════════════════
 // INIT APP
 // ══════════════════════════════════════════════
-function initApp() {
+async function initApp() {
+  toast('⟳ Loading catalog...');
+  await loadProductsFromFirestore();
   updateBadges();
   renderDashboard();
 }
@@ -1388,6 +1443,7 @@ function deleteProduct(id) {
   if (!confirm('Delete this product? This cannot be undone.')) return;
   products = products.filter(p => p.id !== id);
   saveProducts(); renderProdCards(); updateBadges();
+  deleteProductFromFirestore(id);
   toast('Product deleted');
 }
 
@@ -1438,7 +1494,12 @@ function saveProduct() {
     products.push(data);
     toast('Product added ✓');
   }
-  saveProducts(); resetProductForm(); renderProdCards(); updateBadges();
+  const savedProduct = editId
+    ? products.find(p => p.id === editId)
+    : products[products.length - 1];
+  saveProducts();
+  if (savedProduct) saveProductToFirestore(savedProduct);
+  resetProductForm(); renderProdCards(); updateBadges();
   if (document.getElementById('panel-dashboard').classList.contains('active')) renderDashboard();
 }
 
@@ -2416,6 +2477,7 @@ Object.assign(window, {
   renderAnalytics,
   toggleSidebar, closeSidebar,
   refreshStorage,
+  loadProductsFromFirestore,
 });
 
 </script>

@@ -320,17 +320,39 @@ footer{background:var(--dark);border-top:1px solid var(--border);padding:5rem 5r
 <div class="tbox" id="tbox"></div>
 <button class="btop" id="btop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
 
-<script>
-// ─── LIVE CATALOG: reads from admin localStorage only. No hardcoded products. ───
-const BASE_CATALOG = [];
+<script type="module">
+// ─── FIREBASE: load catalog from Firestore ───
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const _fbApp = initializeApp({
+  apiKey: "AIzaSyCy9fDJR4Bt31lOa1lQ6sVYjcLCAVx-HTs",
+  authDomain: "avajewelry-28561.firebaseapp.com",
+  projectId: "avajewelry-28561",
+  storageBucket: "avajewelry-28561.firebasestorage.app",
+  messagingSenderId: "715075775873",
+  appId: "1:715075775873:web:4d766238bf8a35228c0c80"
+});
+const _db = getFirestore(_fbApp);
 
 let CATALOG = [];
-try {
-  const _saved = localStorage.getItem('ava_products');
-  if (_saved) {
-    CATALOG = JSON.parse(_saved) || [];
+
+async function loadCatalog() {
+  try {
+    const snap = await getDocs(collection(_db, 'products'));
+    CATALOG = snap.docs.map(d => {
+      const data = d.data();
+      if (data.img && data.img.startsWith('__local:')) data.img = '';
+      return data;
+    }).sort((a,b) => a.id - b.id);
+    localStorage.setItem('ava_products', JSON.stringify(CATALOG));
+  } catch(e) {
+    try {
+      const _saved = localStorage.getItem('ava_products');
+      CATALOG = _saved ? JSON.parse(_saved) : [];
+    } catch(e2) { CATALOG = []; }
   }
-} catch(e) { CATALOG = []; }
+}
 
 // CURSOR
 const CUR=document.getElementById('cur'),CRING=document.getElementById('cring');
@@ -501,7 +523,16 @@ function setMain(src, cat, el) {
 
 function selSize(el){document.querySelectorAll('.psz').forEach(s=>s.classList.remove('on'));el.classList.add('on');}
 
-document.addEventListener('DOMContentLoaded', () => { initProduct(); setTimeout(initPdWish, 50); });
+document.addEventListener('DOMContentLoaded', async () => {
+  hov(); renderCart(); updateBadge();
+  await loadCatalog();
+  // Re-resolve PROD after catalog loads
+  const params2 = new URLSearchParams(location.search);
+  const pid2 = parseInt(params2.get('id'));
+  PROD = CATALOG.find(p => p.id === pid2) || CATALOG[0] || null;
+  initProduct();
+  setTimeout(initPdWish, 50);
+});
 
 function getWish(){try{return JSON.parse(localStorage.getItem('ava_wishlist')||'[]');}catch(e){return [];}}
 function saveWish(w){localStorage.setItem('ava_wishlist',JSON.stringify(w));}
