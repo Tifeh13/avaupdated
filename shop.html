@@ -377,12 +377,6 @@ footer{background:var(--dark);border-top:1px solid var(--border);padding:5rem 5r
 
 <script>
 // ─── CATALOG: reads from admin localStorage only. No hardcoded products. ───
-// ─── ONE-TIME RESET: wipes any old hardcoded products from visitor browsers ───
-if (localStorage.getItem('ava_catalog_version') !== '2') {
-  localStorage.removeItem('ava_products');
-  localStorage.setItem('ava_catalog_version', '2');
-}
-
 const BASE_CATALOG = [];
 
 let CATALOG = [];

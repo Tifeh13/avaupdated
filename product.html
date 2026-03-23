@@ -321,12 +321,6 @@ footer{background:var(--dark);border-top:1px solid var(--border);padding:5rem 5r
 <button class="btop" id="btop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
 
 <script>
-// ─── ONE-TIME RESET: wipes old hardcoded products from visitor browsers ───
-if (localStorage.getItem('ava_catalog_version') !== '2') {
-  localStorage.removeItem('ava_products');
-  localStorage.setItem('ava_catalog_version', '2');
-}
-
 // ─── LIVE CATALOG: reads from admin localStorage only. No hardcoded products. ───
 const BASE_CATALOG = [];
 
