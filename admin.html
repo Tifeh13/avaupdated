@@ -802,7 +802,7 @@ img { display: block; }
           <div class="progress-bar" id="progressBar"><div class="progress-fill" id="progressFill" style="width:0%"></div></div>
         </div>
 
-        <div class="card" style="margin-bottom:1.5rem">
+        <div class="card" style="margin-bottom:1rem">
           <div class="card-head">
             <div class="card-title">How to use your images</div>
           </div>
@@ -811,6 +811,25 @@ img { display: block; }
             2. Click <strong style="color:var(--gold)">Use as Product Image</strong> on any photo<br>
             3. Go to <strong style="color:var(--white)">Products</strong> → Edit a product → the image URL is pre-filled<br>
             4. Save the product — your photo now shows on the shop
+          </div>
+        </div>
+
+        <!-- STORAGE MONITOR -->
+        <div class="card" style="margin-bottom:1.5rem">
+          <div class="card-head">
+            <div class="card-title">Browser Storage Monitor</div>
+            <button onclick="refreshStorage()" style="background:none;border:1px solid var(--border);color:var(--muted);padding:.25rem .7rem;font-size:.52rem;letter-spacing:.12em;text-transform:uppercase;transition:all .2s" onmouseenter="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseleave="this.style.borderColor='var(--border)';this.style.color='var(--muted)'">↻ Refresh</button>
+          </div>
+          <div class="card-body">
+            <div id="storageBar" style="height:8px;background:var(--raised);border-radius:4px;overflow:hidden;margin-bottom:.8rem">
+              <div id="storageFill" style="height:100%;border-radius:4px;transition:width .5s;background:var(--green)"></div>
+            </div>
+            <div id="storageStats" style="display:grid;grid-template-columns:repeat(3,1fr);gap:.8rem;font-size:.6rem;font-family:var(--mono)"></div>
+            <div style="margin-top:.8rem;padding:.7rem;background:var(--raised);border:1px solid var(--border);font-size:.58rem;color:var(--muted);line-height:1.7;font-family:var(--mono)">
+              💡 <strong style="color:var(--white)">Tip:</strong> Each photo is auto-compressed to ~100–150KB before saving.
+              If storage gets full, delete unused images or products with large photos.
+              LocalStorage limit is ~5MB per browser.
+            </div>
           </div>
         </div>
 
@@ -1161,7 +1180,7 @@ function gotoPanel(name, el) {
   const t = panelTitles[name];
   document.getElementById('topbarTitle').innerHTML = `${t[0]} <span>${t[1]}</span>`;
   if (name === 'products')  renderProducts();
-  if (name === 'images')    renderImages();
+  if (name === 'images')    { renderImages(); setTimeout(refreshStorage, 100); }
   if (name === 'orders')    renderOrders();
   if (name === 'customers') renderCustomers();
   if (name === 'analytics') renderAnalytics();
@@ -1425,11 +1444,29 @@ function saveProduct() {
 
 function inlineUpload(input) {
   const file = input.files[0]; if (!file) return;
-  compressImage(file, 800, 0.72, dataUrl => {
+  const origKB = Math.round(file.size / 1024);
+  compressImage(file, 800, 0.82, dataUrl => {
+    const compKB = Math.round(dataUrl.length * 0.75 / 1024);
     document.getElementById('f-img').value = dataUrl;
     previewImg();
-    toast('Image compressed & embedded ✓');
+    showSizeTag(compKB, origKB);
+    toast(`📸 ${origKB}KB → ${compKB}KB compressed ✓`);
   });
+}
+
+function showSizeTag(compKB, origKB) {
+  let tag = document.getElementById('imgSizeTag');
+  if (!tag) {
+    tag = document.createElement('div');
+    tag.id = 'imgSizeTag';
+    tag.style.cssText = 'font-size:.55rem;font-family:var(--mono);margin-top:.4rem;display:flex;align-items:center;gap:.5rem';
+    const prev = document.getElementById('imgPreview');
+    if (prev && prev.parentNode) prev.parentNode.insertBefore(tag, prev.nextSibling);
+  }
+  const saved = Math.round((1 - compKB/origKB) * 100);
+  tag.innerHTML = `<span style="color:var(--faint)">Original: ${origKB}KB</span>
+    <span style="color:var(--green)">→ Compressed: ${compKB}KB</span>
+    <span style="background:rgba(46,204,113,.15);color:var(--green);padding:.1rem .4rem;border-radius:2px">${saved}% saved</span>`;
 }
 
 // Compress image to max width/height and quality before storing
@@ -1477,22 +1514,70 @@ function renderImages() {
     </div>`).join('');
 }
 
+function refreshStorage() {
+  try {
+    let total = 0;
+    let prodSize = 0, imgSize = 0, otherSize = 0;
+    for (let key in localStorage) {
+      if (!localStorage.hasOwnProperty(key)) continue;
+      const bytes = (localStorage[key].length + key.length) * 2;
+      total += bytes;
+      if (key === 'ava_products') prodSize = bytes;
+      else if (key === 'ava_images') imgSize = bytes;
+      else otherSize += bytes;
+    }
+    const totalKB  = Math.round(total / 1024);
+    const prodKB   = Math.round(prodSize / 1024);
+    const imgKB    = Math.round(imgSize / 1024);
+    const otherKB  = Math.round(otherSize / 1024);
+    const limitKB  = 5120; // ~5MB
+    const pct      = Math.min(100, Math.round(totalKB / limitKB * 100));
+    const fill     = document.getElementById('storageFill');
+    const stats    = document.getElementById('storageStats');
+    if (fill) {
+      fill.style.width = pct + '%';
+      fill.style.background = pct > 80 ? 'var(--red)' : pct > 60 ? 'var(--orange)' : 'var(--green)';
+    }
+    if (stats) {
+      stats.innerHTML = `
+        <div style="text-align:center;padding:.6rem;background:var(--raised);border:1px solid var(--border)">
+          <div style="color:var(--faint);margin-bottom:.3rem;font-size:.5rem;letter-spacing:.15em;text-transform:uppercase">Used</div>
+          <div style="font-family:var(--serif);font-size:1.1rem;color:${pct>80?'var(--red)':pct>60?'var(--orange)':'var(--gold)'}">${totalKB}KB</div>
+          <div style="color:var(--faint);font-size:.5rem">${pct}% of 5MB</div>
+        </div>
+        <div style="text-align:center;padding:.6rem;background:var(--raised);border:1px solid var(--border)">
+          <div style="color:var(--faint);margin-bottom:.3rem;font-size:.5rem;letter-spacing:.15em;text-transform:uppercase">Products</div>
+          <div style="font-family:var(--serif);font-size:1.1rem;color:var(--gold)">${prodKB}KB</div>
+          <div style="color:var(--faint);font-size:.5rem">${products.length} items</div>
+        </div>
+        <div style="text-align:center;padding:.6rem;background:var(--raised);border:1px solid var(--border)">
+          <div style="color:var(--faint);margin-bottom:.3rem;font-size:.5rem;letter-spacing:.15em;text-transform:uppercase">Image Lib</div>
+          <div style="font-family:var(--serif);font-size:1.1rem;color:var(--gold)">${imgKB}KB</div>
+          <div style="color:var(--faint);font-size:.5rem">${images.length} photos</div>
+        </div>`;
+    }
+  } catch(e) {}
+}
+
 function handleFiles(files) {
   const total = files.length; let done = 0;
+  let totalSaved = 0;
   const bar = document.getElementById('progressBar');
   const fill = document.getElementById('progressFill');
   bar.classList.add('show'); fill.style.width = '0%';
   Array.from(files).forEach(file => {
-    compressImage(file, 800, 0.72, dataUrl => {
-      const origKb = Math.round(file.size / 1024);
-      const compKb = Math.round(dataUrl.length * 0.75 / 1024);
-      const size = compKb > 1024 ? `${(compKb/1024).toFixed(1)}MB` : `${compKb}KB`;
+    const origKB = Math.round(file.size / 1024);
+    compressImage(file, 800, 0.82, dataUrl => {
+      const compKB = Math.round(dataUrl.length * 0.75 / 1024);
+      totalSaved += (origKB - compKB);
+      const size = compKB > 1024 ? `${(compKB/1024).toFixed(1)}MB` : `${compKB}KB`;
       images.push({ src: dataUrl, name: file.name, size, date: new Date().toLocaleDateString('en-US', {month:'short',day:'numeric'}) });
       done++;
       fill.style.width = (done/total*100) + '%';
       if (done === total) {
         saveImages(); renderImages(); updateBadges();
-        toast(`${total} image${total>1?'s':''} uploaded & compressed ✓`);
+        const savedTxt = totalSaved > 1024 ? `${(totalSaved/1024).toFixed(1)}MB` : `${totalSaved}KB`;
+        toast(`✅ ${total} photo${total>1?'s':''} uploaded · saved ${savedTxt} of storage`);
         setTimeout(() => bar.classList.remove('show'), 1000);
       }
     });
@@ -2330,6 +2415,7 @@ Object.assign(window, {
   closeCustModal,
   renderAnalytics,
   toggleSidebar, closeSidebar,
+  refreshStorage,
 });
 
 </script>
