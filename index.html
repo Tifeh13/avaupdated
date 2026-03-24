@@ -442,44 +442,36 @@ footer{background:var(--dark);border-top:1px solid var(--border);padding:5rem 5r
 </footer>
 <div class="tbox" id="tbox"></div>
 <button class="btop" id="btop" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
-<script>// ─── LIVE CATALOG: reads from admin panel localStorage, falls back to defaults ───
-const BASE_CATALOG=[
-  // RINGS — accurate ring images
-  {id:1,cat:"Rings",name:"White Gold Solitaire Ring",mat:"18K White Gold · 1.2ct VVS1 Diamond",price:"$4,299",num:4299,old:"$5,374",badge:"sale",rating:5,rev:87,stock:null,metal:"white gold",stone:"diamond",img:"https://images.pexels.com/photos/190819/pexels-photo-190819.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&fit=crop"},
-  {id:2,cat:"Rings",name:"Three-Stone Diamond Ring",mat:"18K Yellow Gold · 2ct Three-Stone Diamond",price:"$7,800",num:7800,old:null,badge:"hot",rating:5,rev:41,stock:4,metal:"yellow gold",stone:"diamond",img:"https://images.pexels.com/photos/1458867/pexels-photo-1458867.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&fit=crop"},
-  {id:3,cat:"Rings",name:"Yellow Gold Diamond Band",mat:"18K Yellow Gold · Full Diamond Set",price:"$3,500",num:3500,old:"$4,200",badge:"sale",rating:4,rev:35,stock:null,metal:"yellow gold",stone:"diamond",img:"https://images.pexels.com/photos/265906/pexels-photo-265906.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&fit=crop"},
-  {id:4,cat:"Rings",name:"Rose Gold Oval Diamond Ring",mat:"18K Rose Gold · 1ct Oval Diamond",price:"$5,200",num:5200,old:null,badge:"new",rating:5,rev:22,stock:3,metal:"rose gold",stone:"diamond",img:"https://images.pexels.com/photos/691046/pexels-photo-691046.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&fit=crop"},
-  {id:5,cat:"Rings",name:"Sapphire Platinum Ring",mat:"18K Platinum · 3ct Ceylon Sapphire",price:"$6,800",num:6800,old:"$8,200",badge:"sale",rating:4,rev:31,stock:null,metal:"platinum",stone:"sapphire",img:"https://images.pexels.com/photos/1682637/pexels-photo-1682637.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&fit=crop"},
-  {id:6,cat:"Rings",name:"Ruby Statement Ring",mat:"18K Yellow Gold · Burmese Ruby",price:"$8,400",num:8400,old:null,badge:"limited",rating:5,rev:14,stock:2,metal:"yellow gold",stone:"ruby",img:"https://images.pexels.com/photos/3266400/pexels-photo-3266400.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&fit=crop"},
-  // WATCHES — accurate luxury watch images
-  {id:7,cat:"Watches",name:"Gold Automatic Chronograph",mat:"18K Yellow Gold · Automatic Movement",price:"$12,500",num:12500,old:null,badge:"new",rating:5,rev:28,stock:3,metal:"yellow gold",stone:"none",img:"https://images.pexels.com/photos/125779/pexels-photo-125779.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&fit=crop"},
-  {id:8,cat:"Watches",name:"Rose Gold Diamond Watch",mat:"18K Rose Gold · Diamond Bezel · 36mm",price:"$18,000",num:18000,old:null,badge:"limited",rating:5,rev:11,stock:2,metal:"rose gold",stone:"diamond",img:"https://images.pexels.com/photos/277390/pexels-photo-277390.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&fit=crop"},
-  {id:9,cat:"Watches",name:"White Gold Dress Watch",mat:"18K White Gold · Swiss Automatic · 40mm",price:"$9,200",num:9200,old:null,badge:null,rating:4,rev:18,stock:null,metal:"white gold",stone:"none",img:"https://images.pexels.com/photos/9978753/pexels-photo-9978753.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&fit=crop"},
-  {id:10,cat:"Watches",name:"Rose Gold Tourbillon Watch",mat:"18K Rose Gold · Manual Wind · 42mm",price:"$24,000",num:24000,old:null,badge:"limited",rating:5,rev:6,stock:1,metal:"rose gold",stone:"none",img:"https://images.pexels.com/photos/2783873/pexels-photo-2783873.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&fit=crop"},
-  // NECKLACES — accurate necklace images
-  {id:11,cat:"Necklaces",name:"Gold Diamond Tennis Necklace",mat:"18K Yellow Gold · 3.5ct Tennis Style",price:"$8,900",num:8900,old:null,badge:null,rating:5,rev:44,stock:null,metal:"yellow gold",stone:"diamond",img:"https://images.pexels.com/photos/1191531/pexels-photo-1191531.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&fit=crop"},
-  {id:12,cat:"Necklaces",name:"White Gold Diamond Pendant",mat:"18K White Gold · Floating Diamond Drop",price:"$2,900",num:2900,old:null,badge:"new",rating:5,rev:52,stock:null,metal:"white gold",stone:"diamond",img:"https://images.pexels.com/photos/1616096/pexels-photo-1616096.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&fit=crop"},
-  {id:13,cat:"Necklaces",name:"Diamond Collar Necklace",mat:"18K White Gold · 5ct Total Weight",price:"$14,200",num:14200,old:null,badge:"limited",rating:5,rev:9,stock:2,metal:"white gold",stone:"diamond",img:"https://images.pexels.com/photos/3014853/pexels-photo-3014853.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&fit=crop"},
-  {id:14,cat:"Necklaces",name:"Rose Gold Sapphire Pendant",mat:"18K Rose Gold · Ceylon Sapphire Drop",price:"$3,600",num:3600,old:null,badge:null,rating:5,rev:27,stock:null,metal:"rose gold",stone:"sapphire",img:"https://images.pexels.com/photos/1413420/pexels-photo-1413420.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&fit=crop"},
-  {id:15,cat:"Necklaces",name:"Gold Emerald Drop Necklace",mat:"18K Yellow Gold · Colombian Emerald",price:"$5,100",num:5100,old:"$6,300",badge:"sale",rating:4,rev:19,stock:null,metal:"yellow gold",stone:"emerald",img:"https://images.pexels.com/photos/2735970/pexels-photo-2735970.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&fit=crop"},
-  // BRACELETS — accurate bracelet images
-  {id:16,cat:"Bracelets",name:"Diamond Tennis Bracelet",mat:"18K Rose Gold · 2ct Total Diamond",price:"$6,200",num:6200,old:null,badge:"hot",rating:4,rev:63,stock:5,metal:"rose gold",stone:"diamond",img:"https://images.pexels.com/photos/1462726/pexels-photo-1462726.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&fit=crop"},
-  {id:17,cat:"Bracelets",name:"Gold Charm Bracelet",mat:"18K Yellow Gold · 12 Hand-Set Charms",price:"$2,500",num:2500,old:null,badge:"new",rating:5,rev:33,stock:null,metal:"yellow gold",stone:"none",img:"https://images.pexels.com/photos/3687609/pexels-photo-3687609.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&fit=crop"},
-  {id:18,cat:"Bracelets",name:"White Gold Cuff Bracelet",mat:"18K White Gold · Hammered & Polished",price:"$3,200",num:3200,old:null,badge:null,rating:5,rev:47,stock:null,metal:"white gold",stone:"none",img:"https://images.pexels.com/photos/4763870/pexels-photo-4763870.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&fit=crop"},
-  {id:19,cat:"Bracelets",name:"Yellow Gold Diamond Bangle",mat:"18K Yellow Gold · Channel-Set Diamonds",price:"$4,800",num:4800,old:"$5,900",badge:"sale",rating:5,rev:29,stock:null,metal:"yellow gold",stone:"diamond",img:"https://images.pexels.com/photos/1654489/pexels-photo-1654489.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&fit=crop"},
-  // EARRINGS — accurate earring images
-  {id:20,cat:"Earrings",name:"White Gold Halo Stud Earrings",mat:"18K White Gold · 0.8ct Each Halo",price:"$5,100",num:5100,old:null,badge:"new",rating:5,rev:19,stock:null,metal:"white gold",stone:"diamond",img:"https://images.pexels.com/photos/1413418/pexels-photo-1413418.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&fit=crop"},
-  {id:21,cat:"Earrings",name:"Pear Diamond Drop Earrings",mat:"18K White Gold · Pear Cut Diamond",price:"$3,600",num:3600,old:null,badge:null,rating:5,rev:27,stock:null,metal:"white gold",stone:"diamond",img:"https://images.pexels.com/photos/4173234/pexels-photo-4173234.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&fit=crop"},
-  {id:22,cat:"Earrings",name:"Gold Briolette Drop Earrings",mat:"18K Yellow Gold · Briolette Diamond",price:"$4,100",num:4100,old:null,badge:"hot",rating:5,rev:22,stock:null,metal:"yellow gold",stone:"diamond",img:"https://images.pexels.com/photos/7285153/pexels-photo-7285153.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&fit=crop"},
-  {id:23,cat:"Earrings",name:"Rose Gold Sapphire Earrings",mat:"18K Rose Gold · Ceylon Sapphire",price:"$2,950",num:2950,old:"$3,600",badge:"sale",rating:4,rev:38,stock:null,metal:"rose gold",stone:"sapphire",img:"https://images.pexels.com/photos/4173235/pexels-photo-4173235.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&fit=crop"},
-  {id:24,cat:"Earrings",name:"Gold Pearl & Diamond Ear Climbers",mat:"18K Yellow Gold · South Sea Pearl & Diamond",price:"$3,800",num:3800,old:null,badge:"new",rating:5,rev:16,stock:3,metal:"yellow gold",stone:"diamond",img:"https://images.pexels.com/photos/4521416/pexels-photo-4521416.jpeg?auto=compress&cs=tinysrgb&w=600&h=600&fit=crop"},
-];
-// ✅ Admin-connected: if you've saved changes in admin.html, they load here automatically.
-let CATALOG;
-try {
-  const _saved = localStorage.getItem('ava_products');
-  CATALOG = (_saved && JSON.parse(_saved).length) ? JSON.parse(_saved) : BASE_CATALOG;
-} catch(e) { CATALOG = BASE_CATALOG; }
+<script type="module">
+// ─── FIREBASE: load catalog from Firestore (works across all devices) ───
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+const _fbApp = initializeApp({
+  apiKey: "AIzaSyCy9fDJR4Bt31lOa1lQ6sVYjcLCAVx-HTs",
+  authDomain: "avajewelry-28561.firebaseapp.com",
+  projectId: "avajewelry-28561",
+  storageBucket: "avajewelry-28561.firebasestorage.app",
+  messagingSenderId: "715075775873",
+  appId: "1:715075775873:web:4d766238bf8a35228c0c80"
+});
+const _db = getFirestore(_fbApp);
+let CATALOG = [];
+async function loadCatalog() {
+  try {
+    const snap = await getDocs(collection(_db, 'products'));
+    CATALOG = snap.docs.map(d => {
+      const data = d.data();
+      if (data.img && data.img.startsWith('__local:')) data.img = '';
+      return data;
+    }).sort((a,b) => a.id - b.id);
+    localStorage.setItem('ava_products', JSON.stringify(CATALOG));
+  } catch(e) {
+    try {
+      const _s = localStorage.getItem('ava_products');
+      CATALOG = _s ? JSON.parse(_s) : [];
+    } catch(e2) { CATALOG = []; }
+  }
+}
 
 // CURSOR
 const CUR=document.getElementById('cur'),CRING=document.getElementById('cring');
@@ -556,9 +548,10 @@ function cQ(i,d){CART[i].qty+=d;if(CART[i].qty<=0)CART.splice(i,1);saveCart();re
 function rmC(i){CART.splice(i,1);saveCart();renderCart();updateBadge();}
 
 // INIT
-document.addEventListener('DOMContentLoaded',()=>{
+document.addEventListener('DOMContentLoaded', async ()=>{
+  hov(); renderCart(); updateBadge();
+  await loadCatalog();
   renderFeatured();
-  hov();renderCart();updateBadge();
 });
 
 function renderFeatured(){
