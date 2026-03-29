@@ -473,7 +473,8 @@ function initProduct(){
   // Info
   document.getElementById('pcat').textContent     = PROD.cat;
   document.getElementById('ptitle').textContent   = PROD.name;
-  document.getElementById('pstars').textContent   = '★'.repeat(PROD.rating) + '☆'.repeat(5 - PROD.rating);
+  const _r = Math.min(5, Math.max(0, parseInt(PROD.rating) || 0));
+document.getElementById('pstars').textContent = '★'.repeat(_r) + '☆'.repeat(5 - _r);
   document.getElementById('prev').textContent     = PROD.rev + ' reviews';
   document.getElementById('pmat3').textContent    = PROD.mat;
   document.getElementById('pprice3').textContent  = PROD.price;
@@ -494,7 +495,7 @@ function initProduct(){
       </div>
       <div class="pc-body">
         <div class="pc-cat">${p.cat}</div>
-        <div class="pc-stars">${'★'.repeat(p.rating)+'☆'.repeat(5-p.rating)} <span>(${p.rev})</span></div>
+        <div class="pc-stars">${'★'.repeat(Math.min(5,Math.max(0,parseInt(p.rating)||0)))+'☆'.repeat(5-Math.min(5,Math.max(0,parseInt(p.rating)||0)))} <span>(${p.rev})</span></div>
         <div class="pc-name">${p.name}</div>
         <div class="pc-mat">${p.mat}</div>
         <div class="pc-ft"><span class="pc-price">${p.price}</span><button class="atc" onclick="event.stopPropagation();addToCart(${p.id})">+ Cart</button></div>

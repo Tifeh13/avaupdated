@@ -548,7 +548,8 @@ function cardHTML(p, i) {
   const badge = p.badge ? `<div class="badge b-${p.badge}">${bl[p.badge]}</div>` : '';
   const stock = p.stock ? `<div class="stk"><span class="sdot"></span>Only ${p.stock} left</div>` : '';
   const old   = p.old ? `<span class="pc-old">${p.old}</span>` : '';
-  const stars = '★'.repeat(p.rating)+'☆'.repeat(5-p.rating);
+  const rating = Math.min(5, Math.max(0, parseInt(p.rating) || 0));
+const stars = '★'.repeat(rating)+'☆'.repeat(5-rating);
   return `<div class="pc" style="animation-delay:${(i%3)*.06}s">
     <div class="pc-img">
       ${imgHTML(p)}
